@@ -98,7 +98,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 ## The game notebook (Protocal.md — the authoritative spec is in the repo root)
 
-**When a game starts**: copy `game_notes/TEMPLATE/` to `game_notes/<room_id>/` and maintain its md files for the whole game (they wikilink to each other):
+**When a game starts**: copy `game_notes/TEMPLATE/` to `game_notes/<room_id>-<your_color>/` (e.g. `093d86-w`) — the color suffix is REQUIRED: in agent-vs-agent mirror matches both seats run from this same folder, and an un-suffixed path makes both agents fight over one notebook (file-write errors) and maintain its md files for the whole game (they wikilink to each other):
 
 | File | Holds |
 |------|-------|
@@ -109,7 +109,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 **When to update:** Step 1's files every move; the rest as the protocol below says. In timed games, do heavy updates **on the opponent's clock** (`wait_for_my_turn` timeouts) — your own turns stay fast because the thinking is already written down.
 
-**Notebooks are permanent research artifacts — never delete one.** On a rematch (same room id), create `game_notes/<room_id>-2/` (then `-3`, ...) instead of overwriting. **When the game ends, finalize the notebook**: append the result and a short post-mortem to `log.md` (what decided the game, which notebook entry was wrong or missing — e.g. "the losing tactic was never in working.md" or "the strategy was right but I abandoned it at move 18"). The dev session studies these to improve you.
+**Notebooks are permanent research artifacts — never delete one.** On a rematch (same room id), create `game_notes/<room_id>-2-<your_color>/` (then `-3-...`, ...) instead of overwriting. **When the game ends, finalize the notebook**: append the result and a short post-mortem to `log.md` (what decided the game, which notebook entry was wrong or missing — e.g. "the losing tactic was never in working.md" or "the strategy was right but I abandoned it at move 18"). The dev session studies these to improve you.
 
 ## Every move: the 3-step protocol (blitz or not — depth scales, steps never skip)
 
