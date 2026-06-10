@@ -135,6 +135,47 @@ def inspect_square(fen: str, square_name: str) -> str:
     ])
 
 
+def hanging_report(fen: str) -> str:
+    """The full attacked/undefended picture, both sides — automates the
+    notebook's attacked/undefended bookkeeping in one call."""
+    board = _board(fen)
+    lines = []
+    for color, label in ((chess.WHITE, "White"), (chess.BLACK, "Black")):
+        attacked = []
+        undefended = []
+        for square in chess.SquareSet(board.occupied_co[color]):
+            piece = board.piece_at(square)
+            if piece.piece_type == chess.KING:
+                continue
+            attackers = board.attackers(not color, square)
+            defenders = board.attackers(color, square)
+            desc = _piece_desc(board, square)
+            if attackers:
+                attacker_descs = ", ".join(_piece_desc(board, a) for a in attackers)
+                state = "NO defenders" if not defenders else (
+                    f"{len(defenders)} defender(s)")
+                attacked.append(
+                    f"{desc} — attacked by {attacker_descs} ({len(attackers)}v{len(defenders)}, {state})"
+                )
+            elif not defenders:
+                undefended.append(f"{desc} — zero defenders (not attacked yet, but targetable)")
+        lines.append(f"=== {label} ===")
+        lines.append("Attacked:")
+        if attacked:
+            lines.extend(f"  - {a}" for a in attacked)
+        else:
+            lines.append("  (none)")
+        lines.append("Undefended (quiet but loose):")
+        if undefended:
+            lines.extend(f"  - {u}" for u in undefended)
+        else:
+            lines.append("  (none)")
+    if board.is_check():
+        turn = "White" if board.turn == chess.WHITE else "Black"
+        lines.append(f"⚠ {turn} is IN CHECK.")
+    return "\n".join(lines)
+
+
 def list_loose_pieces(fen: str) -> str:
     board = _board(fen)
     lines = []

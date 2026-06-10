@@ -38,6 +38,20 @@ async def inspect_square(fen: str, square: str) -> str:
 
 
 @mcp.tool()
+async def hanging_report(fen: str) -> str:
+    """The complete attacked/undefended picture, both sides, in one call:
+    every attacked piece with attacker-vs-defender counts, every undefended
+    piece (even if not attacked yet — those are future targets), and check
+    status. Call once per move in Step 1 — it replaces manual
+    attacked/undefended bookkeeping.
+
+    Args:
+        fen: The current position (from the board report).
+    """
+    return toolkit.hanging_report(fen)
+
+
+@mcp.tool()
 async def list_loose_pieces(fen: str) -> str:
     """Both sides' hanging pieces: attacked with no defenders, or attacked by
     something cheaper. Your list = urgent problems; theirs = candidate targets.

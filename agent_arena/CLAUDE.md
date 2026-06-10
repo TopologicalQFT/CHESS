@@ -39,7 +39,8 @@ Your own analysis equipment — board FACTS, never judgment. Every tool takes th
 |------|---------|--------------|
 | `preview_move(fen, move)` | After this move: which of MY pieces hang? What checks/captures does the opponent get? | **Before committing any capture, pawn push, or "trade"** — this is mandatory for captures |
 | `inspect_square(fen, square)` | Who attacks/defends this square, by piece | Considering a capture or landing square — "is it actually defended?" |
-| `list_loose_pieces(fen)` | Hanging pieces, both sides | Start of your thinking each move: your urgent problems + their free targets |
+| `hanging_report(fen)` | The COMPLETE attacked/undefended picture, both sides, with counts | **Once per move, Step 1** — replaces manual attacked/undefended bookkeeping |
+| `list_loose_pieces(fen)` | Hanging pieces only (subset of hanging_report) | Quick recheck inside a calculation |
 | `opponent_replies(fen)` | Their checks & captures if you passed | "What is their threat?" — step 1 of the routine |
 | `pinned_pieces(fen)` | Absolutely pinned pieces, both colors | Before trusting any defender, and before moving a piece near your king's lines |
 | `imagine_start(fen)` → `imagine_move([...])` → `imagine_undo(n)` / `imagine_show()` | **Your imagination board** — walk a line forward (both sides' moves), every move validated, danger facts at each stop; undo to branch | ANY multi-move calculation. Start from the current report's FEN each turn |
@@ -93,7 +94,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 5. **Don't create sharpness you can't afford.** Game 5 was lost by choosing the sharp knight adventure over the simple central move with an even clock — the complications then cost 90 seconds across four moves. In blitz, prefer the move that makes your NEXT several moves obvious.
 6. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock). The move loop's steps NEVER skip — they compress to clauses:
    - **Under 3:00:** the whole loop in ~5 sentences. One clause per step; ≤1 toolkit call.
-   - **Under 2:00:** one clause per step, ZERO toolkit calls, ONE candidate (recapture / answer the threat / develop toward your strategy). **A sharp position is NOT an exception**: game 5 flagged in an equal position because "but this move is critical" beat the gate every time. A lost-on-time sharp position scores the same zero.
+   - **Under 2:00:** one clause per step, no toolkit calls beyond Step 1's `hanging_report`, ONE candidate (recapture / answer the threat / develop toward your strategy). **A sharp position is NOT an exception**: game 5 flagged in an equal position because "but this move is critical" beat the gate every time. A lost-on-time sharp position scores the same zero.
    - **Under 1:00:** OBSERVE = one glance (am I in check? is anything of mine hanging?); your strategy carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
    - Step 1 (classify, roles, attacked/undefended) runs at EVERY gate, and `scenarios.md` keeps being extended on their clock — scenario hits are what win blitz (game 5's winner: seven instant hits).
 
@@ -109,8 +110,6 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 | `strategy.md` | MY long-term strategy — what I'm trying to make happen |
 | `opponent-wants.md` | What THEY want, evidence-based |
 | `piece-roles.md` | Each piece's current jobs — **overloaded pieces marked** |
-| `undefended.md` | Every piece with zero defenders — **even if not attacked right now** (they can be targeted) |
-| `attacked.md` | Pieces currently under attack, with attacker/defender counts; checks and mate threats |
 | `tactic-ideas.md` | Tactical ideas **including currently-impossible ones** + what's missing for each. Closely tied to weaknesses |
 | `scenarios.md` | Short-term lines: "if X → Y (verified)" + my intended sequences |
 | `moves.md` | One line per move worth remembering (for the post-mortem) |
@@ -123,10 +122,10 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 You receive the opponent's move and the modified board. Then:
 
-### Step 1 — MANDATORY, every move, your own eyes, NO tools
-- **Classify against the context**: is their move somewhat EXPECTED (within `context.md` / `opponent-wants.md` / `scenarios.md`) — or something NEW?
+### Step 1 — MANDATORY, every move
+- **Classify against the context**: is their move somewhat EXPECTED (within `context.md` / `opponent-wants.md` / `scenarios.md`) — or something NEW? (Your judgment — no tool can do this.)
 - **Update `piece-roles.md`** for the moved piece (and re-mark overloads).
-- **Update `undefended.md` and `attacked.md`** — yours AND theirs: attacker/defender counts, checks, mate threats. This scan is never outsourced and never skipped; toolkit calls are for verifying chosen lines later, not for doing the scan.
+- **Call `hanging_report(fen)`** — one call, the complete attacked/undefended picture both sides (attacker-vs-defender counts, quiet-but-loose pieces, check status). **READ it, every move** — react to what burns; their loose pieces are candidate targets. Pieces that will STAY loose go into `weaknesses.md` or `tactic-ideas.md` with your judgment attached ("Ra8 stays loose → future fork target").
 
 ### Step 2 — branch on the classification
 **(a) Under context, response straightforward** → respond within the plan. A verified `scenarios.md` hit (no surprises in the report, move is legal) plays in seconds.

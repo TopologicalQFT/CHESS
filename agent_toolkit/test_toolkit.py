@@ -85,6 +85,24 @@ def test_invalid_fen():
         toolkit.preview_move("garbage", "e4")
 
 
+def test_hanging_report():
+    # White Qd5 attacks undefended black Ra8; white Ra1 is undefended but unattacked
+    fen = "r3k3/8/8/3Q4/8/8/8/R3K3 b - - 0 1"
+    out = toolkit.hanging_report(fen)
+    assert "Black rook on a8" in out
+    assert "1v0" in out and "NO defenders" in out      # attacked, no defenders
+    assert "White rook on a1" in out
+    assert "targetable" in out                          # undefended but not attacked
+
+
+def test_hanging_report_counts_defenders():
+    # Black pawn b5 defended by a6 pawn, attacked by white queen
+    fen = "4k3/8/p7/1p1Q4/8/8/8/4K3 w - - 0 1"
+    out = toolkit.hanging_report(fen)
+    assert "Black pawn on b5" in out
+    assert "1v1" in out                                 # one attacker, one defender
+
+
 # ── Imagination board ───────────────────────────────────────────
 
 def fresh_vb() -> toolkit.VirtualBoard:
