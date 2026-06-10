@@ -65,7 +65,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 ## The game notebook (Protocal.md — the authoritative spec is in the repo root)
 
-**When a game starts**: copy `game_notes/TEMPLATE/` to `game_notes/<room_id>-<your_color>/` (e.g. `093d86-w`) — the color suffix is REQUIRED: in agent-vs-agent mirror matches both seats run from this same folder, and an un-suffixed path makes both agents fight over one notebook (file-write errors) and maintain its 4 md files for the whole game:
+**When a game starts**: copy `game_notes/TEMPLATE/` to `game_notes/<room_id>-<your_color>/` (e.g. `093d86-w`) — the color suffix is REQUIRED: in agent-vs-agent mirror matches both seats run from this same folder, and an un-suffixed path makes both agents fight over one notebook (file-write errors). Maintain its 4 md files for the whole game:
 
 | File | Holds |
 |------|-------|
