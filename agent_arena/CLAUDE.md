@@ -94,7 +94,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
    - **Under 3:00:** the whole loop in ~5 sentences. One clause per step; ≤1 toolkit call.
    - **Under 2:00:** one clause per step, no toolkit calls beyond Step 1's `hanging_report`, ONE candidate (recapture / answer the threat / develop toward your strategy). **A sharp position is NOT an exception**: game 5 flagged in an equal position because "but this move is critical" beat the gate every time. A lost-on-time sharp position scores the same zero.
    - **Under 1:00:** OBSERVE = one glance (am I in check? is anything of mine hanging?); your strategy carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
-   - Step 1 (classify, roles, attacked/undefended) runs at EVERY gate, and `scenarios.md` keeps being extended on their clock — scenario hits are what win blitz (game 5's winner: seven instant hits).
+   - Step 1 (classify, roles, attacked/undefended) runs at EVERY gate, and `working.md` scenarios keep being extended on their clock — scenario hits are what win blitz (game 5's winner: seven instant hits).
 
 ## The game notebook (Protocal.md — the authoritative spec is in the repo root)
 
@@ -102,52 +102,47 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 | File | Holds |
 |------|-------|
-| `context.md` | Pawn structure, asymmetries, who is winning and why |
-| `weaknesses.md` | Standing weaknesses, mine & theirs — back-rank, overloaded pieces (2–3 defending jobs at once), weak squares |
-| `assets.md` | Strengths, mine & theirs — fianchetto bishop, open-file rook, outpost knight. Plans grow from assets |
-| `strategy.md` | MY long-term strategy — what I'm trying to make happen |
-| `opponent-wants.md` | What THEY want, evidence-based |
-| `piece-roles.md` | Each piece's current jobs — **overloaded pieces marked** |
-| `tactic-ideas.md` | Tactical ideas **including currently-impossible ones** + what's missing for each. Closely tied to weaknesses |
-| `scenarios.md` | Short-term lines: "if X → Y (verified)" + my intended sequences |
-| `moves.md` | One line per move worth remembering (for the post-mortem) |
+| `position.md` | The board's truth: context (structure, imbalances, who's winning) + assets & weaknesses, both sides |
+| `plans.md` | My long-term strategy + what the opponent wants (evidence-based) |
+| `working.md` | Per-move memory: piece roles (overloads marked) + tactic ideas (incl. not-yet-possible) + scenarios ("if X → Y") |
+| `log.md` | Append-only: one line per notable move; result + post-mortem at game over |
 
 **When to update:** Step 1's files every move; the rest as the protocol below says. In timed games, do heavy updates **on the opponent's clock** (`wait_for_my_turn` timeouts) — your own turns stay fast because the thinking is already written down.
 
-**Notebooks are permanent research artifacts — never delete one.** On a rematch (same room id), create `game_notes/<room_id>-2/` (then `-3`, ...) instead of overwriting. **When the game ends, finalize the notebook**: append the result and a short post-mortem to `moves.md` (what decided the game, which notebook entry was wrong or missing — e.g. "the losing tactic was never in tactic-ideas.md" or "strategy.md was right but I abandoned it at move 18"). The dev session studies these to improve you.
+**Notebooks are permanent research artifacts — never delete one.** On a rematch (same room id), create `game_notes/<room_id>-2/` (then `-3`, ...) instead of overwriting. **When the game ends, finalize the notebook**: append the result and a short post-mortem to `log.md` (what decided the game, which notebook entry was wrong or missing — e.g. "the losing tactic was never in working.md" or "the strategy was right but I abandoned it at move 18"). The dev session studies these to improve you.
 
 ## Every move: the 3-step protocol (blitz or not — depth scales, steps never skip)
 
 You receive the opponent's move and the modified board. Then:
 
 ### Step 1 — MANDATORY, every move
-- **Classify against the context**: is their move somewhat EXPECTED (within `context.md` / `opponent-wants.md` / `scenarios.md`) — or something NEW? (Your judgment — no tool can do this.)
-- **Update `piece-roles.md`** for the moved piece (and re-mark overloads).
-- **Call `hanging_report(fen)`** — one call, the complete attacked/undefended picture both sides (attacker-vs-defender counts, quiet-but-loose pieces, check status). **READ it, every move** — react to what burns; their loose pieces are candidate targets. Pieces that will STAY loose go into `weaknesses.md` or `tactic-ideas.md` with your judgment attached ("Ra8 stays loose → future fork target").
+- **Classify against the context**: is their move somewhat EXPECTED (within `position.md` / `plans.md` / `working.md` scenarios) — or something NEW? (Your judgment — no tool can do this.)
+- **Update `working.md` piece roles** for the moved piece (and re-mark overloads).
+- **Call `hanging_report(fen)`** — one call, the complete attacked/undefended picture both sides (attacker-vs-defender counts, quiet-but-loose pieces, check status). **READ it, every move** — react to what burns; their loose pieces are candidate targets. Pieces that will STAY loose go into `position.md` weaknesses or `working.md` tactic ideas with your judgment attached ("Ra8 stays loose → future fork target").
 
 ### Step 2 — branch on the classification
-**(a) Under context, response straightforward** → respond within the plan. A verified `scenarios.md` hit (no surprises in the report, move is legal) plays in seconds.
+**(a) Under context, response straightforward** → respond within the plan. A verified `working.md` scenario hit (no surprises in the report, move is legal) plays in seconds.
 
 **(b) Under context, but the response is NOT straightforward** →
-- Read `tactic-ideas.md`: add new ideas, prune outdated ones, and check whether their move just made one **executable**
-- Consider giving a role to a **nothing-doing piece** (check `piece-roles.md` for idle pieces)
-- Consider simple long-term strategic moves (from `strategy.md`)
+- Read `working.md` tactic ideas: add new ideas, prune outdated ones, and check whether their move just made one **executable**
+- Consider giving a role to a **nothing-doing piece** (the `working.md` role map shows the idle ones)
+- Consider simple long-term strategic moves (from `plans.md`)
 - For each candidate, guess how they respond; rule out the failures; decide.
 
 **(c) NOT under context** →
-- Examine **what they want** → update `opponent-wants.md`
-- Update `context.md` and `weaknesses.md` / `assets.md`
-- Update `strategy.md` if the position changed character
+- Examine **what they want** → update `plans.md` (opponent section)
+- Update `position.md` (context + assets & weaknesses)
+- Update `plans.md` (my strategy) if the position changed character
 - Then generate candidates as in (b).
 
 **When forming a NEW context or strategy, search the knowledge vault first — don't invent from scratch.** The position you're looking at is almost certainly a known type: `Plans by Position Type` (closed/open center, opposite castling, material imbalance), `Position Evaluation` (what the position demands), the opening's own note (each one states THE plan), endgame notes when material thins. Your strategy should usually be a known plan fitted to this board, not an original invention.
 
-**And favor CONTINUITY.** A new strategy is the LAST resort, not the first reaction: prefer the smallest amendment of the existing `strategy.md` that fits the new facts. Carrying a valid plan beats discovering a new one — plans win by being followed for ten moves, not by being brilliant for one. Rewrite wholesale only when the position genuinely changed character (structure transformed, queens left, material imbalance appeared) — and say in the file WHY the old plan died.
+**And favor CONTINUITY.** A new strategy is the LAST resort, not the first reaction: prefer the smallest amendment of the existing strategy in `plans.md` that fits the new facts. Carrying a valid plan beats discovering a new one — plans win by being followed for ten moves, not by being brilliant for one. Rewrite wholesale only when the position genuinely changed character (structure transformed, queens left, material imbalance appeared) — and say in the file WHY the old plan died.
 
 ### Step 3 — checks on the chosen move, before playing
-1. **The previous role of the moving piece** (`piece-roles.md`) — and the roles of every piece your line RELIES on. A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4").
+1. **The previous role of the moving piece** (`working.md` role map) — and the roles of every piece your line RELIES on. A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4").
 2. **Pawn move? Pawns can't go back — the move is PERMANENT.** Does it hand them an outpost? Weaken squares forever? Pawn moves require long-term context thinking, not tempo thinking.
-3. **How will the opponent respond?** Your answer becomes a `scenarios.md` entry.
+3. **How will the opponent respond?** Your answer becomes a `working.md` scenario.
 Plus, with the toolkit: **every capture, pawn push, "trade", or multi-move line gets walked on the imagination board** (`imagine_start` → `imagine_move`) — even one ply; its report shows what hangs after and their forcing replies. A line you haven't walked is a guess, not a calculation. Count both directions (your attackers, then THEIR defenders — you're measurably worse at the second; `inspect_square` settles it). The move must be in the legal list.
 
 Then update the changed notebook files (now, or on their clock in timed games), and play.
