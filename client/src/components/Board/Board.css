@@ -1,0 +1,40 @@
+.board {
+  width: 100%;
+  height: 100%;
+  max-width: min(85vh, 720px);
+  max-height: min(85vh, 720px);
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+.sq-light { fill: var(--light-sq); }
+.sq-dark  { fill: var(--dark-sq); }
+
+.ov-last     { fill: rgba(155, 199, 0, 0.41); pointer-events: none; }
+.ov-selected { fill: rgba(20, 85, 30, 0.5);   pointer-events: none; }
+
+.ov-dot {
+  fill: rgba(20, 85, 30, 0.3);
+  cursor: pointer;
+}
+.ov-capture {
+  fill: none;
+  stroke: rgba(20, 85, 30, 0.3);
+  stroke-width: 10;
+  cursor: pointer;
+}
+
+.piece { cursor: pointer; }
+
+.coord {
+  font-size: 13px;
+  font-weight: 600;
+  fill: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.promo-backdrop { fill: rgba(0, 0, 0, 0.55); }
+.promo-choice rect { fill: #f8f8f8; stroke: #333; cursor: pointer; }
+.promo-choice:hover rect { fill: #cde6a5; }
+.promo-choice image { cursor: pointer; }

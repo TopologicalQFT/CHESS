@@ -1,0 +1,27 @@
+:root {
+  --light-sq: #f0d9b5;
+  --dark-sq: #b58863;
+  --bg: #161512;
+  --panel: #262421;
+  --panel-border: #3d3a37;
+  --text: #bababa;
+  --text-bright: #ffffff;
+  --accent: #629924;
+  --accent-hover: #75b32d;
+  --danger: #cc3333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+button { font-family: inherit; }

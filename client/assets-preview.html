@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chess Assets Preview</title>
+<style>
+  :root {
+    --light-sq: #f0d9b5;
+    --dark-sq: #b58863;
+    --bg: #161512;
+    --panel: #262421;
+    --panel-border: #3d3a37;
+    --text: #bababa;
+    --text-bright: #ffffff;
+    --accent: #629924;
+    --accent-hover: #75b32d;
+    --danger: #cc3333;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 32px 16px;
+  }
+  h1 { color: var(--text-bright); font-size: 22px; }
+  h2 { color: var(--text-bright); font-size: 16px; margin-bottom: 12px; }
+
+  .layout { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+
+  /* Board */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, 64px);
+    grid-template-rows: repeat(8, 64px);
+    border: 4px solid var(--panel-border);
+    border-radius: 4px;
+  }
+  .sq { width: 64px; height: 64px; position: relative; }
+  .sq.light { background: var(--light-sq); }
+  .sq.dark { background: var(--dark-sq); }
+  .sq img { width: 100%; height: 100%; display: block; }
+  .sq .coord {
+    position: absolute; font-size: 11px; font-weight: 600; pointer-events: none;
+  }
+  .sq .coord.file { right: 3px; bottom: 1px; }
+  .sq .coord.rank { left: 3px; top: 2px; }
+  .sq.light .coord { color: var(--dark-sq); }
+  .sq.dark .coord { color: var(--light-sq); }
+
+  /* Overlay demos */
+  .sq.sel::before, .sq.last::before, .sq.check::before {
+    content: ""; position: absolute; inset: 0;
+  }
+  .sq.sel::before  { background: rgba(20, 85, 30, 0.5); }
+  .sq.last::before { background: rgba(155, 199, 0, 0.41); }
+  .sq.check::before { background: radial-gradient(circle, rgba(255,0,0,0.55) 0%, rgba(255,0,0,0.25) 60%, transparent 80%); }
+  .sq.dot::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(20, 85, 30, 0.3);
+    transform: translate(-50%, -50%);
+  }
+  .sq.ring::after {
+    content: ""; position: absolute; inset: 3px; border-radius: 50%;
+    border: 5px solid rgba(20, 85, 30, 0.3);
+  }
+  .sq img { position: relative; z-index: 1; }
+
+  /* Sidebar mock */
+  .sidebar {
+    width: 280px; background: var(--panel);
+    border: 1px solid var(--panel-border); border-radius: 6px;
+    padding: 14px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .player-row { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+  .player-row .name { color: var(--text-bright); font-weight: 600; }
+  .player-row .captured { display: flex; }
+  .player-row .captured img { width: 18px; height: 18px; }
+  .status { font-size: 16px; color: var(--accent-hover); }
+  .moves {
+    background: var(--bg); border-radius: 4px; padding: 8px;
+    font-size: 14px; line-height: 1.8; height: 150px; overflow-y: auto;
+  }
+  .moves .num { color: #777; margin-right: 4px; }
+  .moves span.mv { padding: 1px 5px; border-radius: 3px; }
+  .moves span.mv:hover { background: #2b2926; cursor: pointer; }
+  .moves span.mv.cur { background: var(--accent); color: #fff; }
+  .btns { display: flex; gap: 8px; }
+  button {
+    flex: 1; padding: 9px 0; font-size: 14px; border: none; border-radius: 4px;
+    cursor: pointer; color: #fff; font-weight: 600;
+  }
+  .btn-green { background: var(--accent); }
+  .btn-green:hover { background: var(--accent-hover); }
+  .btn-red { background: var(--danger); }
+  .btn-red:hover { filter: brightness(1.15); }
+
+  /* All pieces strip */
+  .strip { display: flex; gap: 4px; background: var(--panel); padding: 12px; border-radius: 6px; flex-wrap: wrap; }
+  .strip .cell { width: 56px; height: 56px; border-radius: 4px; }
+  .strip .cell:nth-child(odd) { background: var(--light-sq); }
+  .strip .cell:nth-child(even) { background: var(--dark-sq); }
+  .strip img { width: 100%; height: 100%; }
+  .caption { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+  <h1>♞ Chess Visual Assets Preview</h1>
+  <div class="caption">CBurnett piece set · lichess-style board colors · dark UI theme — overlays demoed: last move (e2→e4 area), selection, legal dots, capture ring, check</div>
+
+  <div class="layout">
+    <div class="board" id="board"></div>
+
+    <div class="sidebar">
+      <div class="player-row">
+        <span class="name">Opponent</span><span>(Black)</span>
+        <span class="captured"><img src="src/assets/pieces/wP.svg"><img src="src/assets/pieces/wP.svg"></span>
+      </div>
+      <div class="status">Your turn — White to move</div>
+      <div class="moves">
+        <span class="num">1.</span><span class="mv">e4</span> <span class="mv">e5</span><br>
+        <span class="num">2.</span><span class="mv">Nf3</span> <span class="mv">Nc6</span><br>
+        <span class="num">3.</span><span class="mv">Bb5</span> <span class="mv">a6</span><br>
+        <span class="num">4.</span><span class="mv">Ba4</span> <span class="mv cur">Nf6</span>
+      </div>
+      <div class="player-row">
+        <span class="name">You</span><span>(White)</span>
+        <span class="captured"><img src="src/assets/pieces/bP.svg"></span>
+      </div>
+      <div class="btns">
+        <button class="btn-green">Offer Draw</button>
+        <button class="btn-red">Surrender</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>All 12 pieces</h2>
+  <div class="strip" id="strip"></div>
+
+<script>
+  const P = n => `src/assets/pieces/${n}.svg`;
+  // starting position, rank 8 → rank 1
+  const start = {
+    8: ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    7: Array(8).fill('bP'),
+    2: Array(8).fill('wP'),
+    1: ['wR','wN','wB','wQ','wK','wB','wN','wR'],
+  };
+  const files = ['a','b','c','d','e','f','g','h'];
+  const board = document.getElementById('board');
+  for (let r = 8; r >= 1; r--) {
+    for (let f = 0; f < 8; f++) {
+      const sq = document.createElement('div');
+      sq.className = 'sq ' + ((r + f) % 2 === 1 ? 'dark' : 'light'); // a1 dark
+      // demo overlays
+      const id = files[f] + r;
+      if (id === 'e2') sq.classList.add('last');        // last move from
+      if (id === 'e4') sq.classList.add('last');        // last move to
+      if (id === 'g1') sq.classList.add('sel');         // selected knight
+      if (id === 'f3' || id === 'h3') sq.classList.add('dot');  // legal moves
+      if (id === 'e8') sq.classList.add('check');       // check demo
+      if (id === 'd7') sq.classList.add('ring');        // capture ring demo
+      const piece = start[r] && start[r][f];
+      if (piece) {
+        const img = document.createElement('img');
+        img.src = P(piece);
+        sq.appendChild(img);
+      }
+      if (r === 1) { const c = document.createElement('span'); c.className = 'coord file'; c.textContent = files[f]; sq.appendChild(c); }
+      if (f === 0) { const c = document.createElement('span'); c.className = 'coord rank'; c.textContent = r; sq.appendChild(c); }
+      board.appendChild(sq);
+    }
+  }
+  const strip = document.getElementById('strip');
+  ['wK','wQ','wR','wB','wN','wP','bK','bQ','bR','bB','bN','bP'].forEach(n => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = `<img src="${P(n)}" title="${n}">`;
+    strip.appendChild(cell);
+  });
+</script>
+</body>
+</html>
