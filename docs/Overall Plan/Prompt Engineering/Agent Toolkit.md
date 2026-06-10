@@ -34,6 +34,9 @@ Toolkit tools take the **FEN as a parameter** — the toolkit has no connection 
 | `list_loose_pieces(fen)` | Both sides' pieces that are attacked with no defenders, or attacked by a cheaper piece | #4 forgotten hanging piece |
 | `opponent_replies(fen)` | If you passed: every check and capture the opponent could play | #3 missing their threat |
 | `pinned_pieces(fen)` | Absolutely pinned pieces, both colors, with the pinning piece | #1 moving a pinned piece |
+| `imagine_start` / `imagine_move` / `imagine_undo` / `imagine_show` | **The imagination board** (user idea): a stateful virtual board seeded from any FEN — walk lines forward with per-move validation and danger facts at each stop, undo to branch | #12 combinations built on illegal moves; replaces error-prone prose calculation |
+
+Note on statefulness: the imagination board is the one stateful part of the toolkit — deliberate, since the toolkit is per-agent equipment (the agent's own head), not the shared table. It's seeded explicitly from a FEN each calculation, so it never has privileged access to the live game.
 
 ### Tier 2 (candidates — not built yet)
 - `exchange_count(fen, square)` — full capture-sequence material count on one square (static exchange). Deterministic but it *is* the calculation skill itself; the strongest crutch. Should be its own tournament dimension if added.

@@ -60,6 +60,49 @@ async def opponent_replies(fen: str) -> str:
 
 
 @mcp.tool()
+async def imagine_start(fen: str) -> str:
+    """Set up your imagination board — the board in your head, as a tool.
+    Start it from the CURRENT game position (the FEN in the board report)
+    at the beginning of each calculation. Then explore with imagine_move /
+    imagine_undo. It never touches the real game.
+
+    Args:
+        fen: Position to imagine from (use the current report's FEN).
+    """
+    return toolkit.VIRTUAL.start(fen)
+
+
+@mcp.tool()
+async def imagine_move(moves: list[str]) -> str:
+    """Play one or more moves on the imagination board (both sides' moves,
+    alternating). Each move is validated — an illegal move stops the line
+    right there, which is exactly how broken combinations get caught.
+    Returns the resulting position with danger facts (hanging pieces,
+    available captures/checks).
+
+    Args:
+        moves: Moves in SAN or UCI, in order, e.g. ["exd4", "Bxd1", "Nxf6+"].
+    """
+    return toolkit.VIRTUAL.push(moves)
+
+
+@mcp.tool()
+async def imagine_undo(count: int = 1) -> str:
+    """Take back moves on the imagination board to try a different branch.
+
+    Args:
+        count: How many plies to take back (default 1).
+    """
+    return toolkit.VIRTUAL.undo(count)
+
+
+@mcp.tool()
+async def imagine_show() -> str:
+    """Show the imagination board's current position and the line that led here."""
+    return toolkit.VIRTUAL.show()
+
+
+@mcp.tool()
 async def pinned_pieces(fen: str) -> str:
     """Absolutely pinned pieces for both colors. A pinned piece cannot leave
     the king's line — it may not really defend what you think it defends.

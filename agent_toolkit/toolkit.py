@@ -169,6 +169,91 @@ def opponent_replies(fen: str) -> str:
     ])
 
 
+# ── Imagination board: a stateful virtual board for line exploration ──
+# Humans calculate on the board in their head; this is that board.
+# Geometry facts only — it never judges whether a line is GOOD.
+
+class VirtualBoard:
+    def __init__(self) -> None:
+        self.start_fen: Optional[str] = None
+        self.board: Optional[chess.Board] = None
+        self.line: List[str] = []  # SAN moves pushed since start
+
+    def start(self, fen: str) -> str:
+        self.board = _board(fen)
+        self.start_fen = fen
+        self.line = []
+        return f"Virtual board set.\n{self._position_report()}"
+
+    def push(self, moves: List[str]) -> str:
+        if self.board is None:
+            return "No virtual board — call imagine_start(fen) first."
+        applied = []
+        for move in moves:
+            parsed = _parse_move(self.board, move)
+            if parsed is None:
+                prefix = f"Applied: {' '.join(applied)}\n" if applied else ""
+                return (
+                    f"{prefix}'{move}' is ILLEGAL in this imagined position — the line "
+                    f"breaks here. (Line so far: {self._line_str()})\n"
+                    f"{self._position_report()}"
+                )
+            san = self.board.san(parsed)
+            self.board.push(parsed)
+            self.line.append(san)
+            applied.append(san)
+        return f"Imagined: {' '.join(applied)}\n{self._position_report()}"
+
+    def undo(self, count: int = 1) -> str:
+        if self.board is None:
+            return "No virtual board — call imagine_start(fen) first."
+        taken = 0
+        while taken < count and self.line:
+            self.board.pop()
+            self.line.pop()
+            taken += 1
+        return f"Took back {taken} move(s).\n{self._position_report()}"
+
+    def show(self) -> str:
+        if self.board is None:
+            return "No virtual board — call imagine_start(fen) first."
+        return self._position_report()
+
+    def _line_str(self) -> str:
+        return " ".join(self.line) if self.line else "(at start position)"
+
+    def _position_report(self) -> str:
+        board = self.board
+        lines = [f"Imagined line: {self._line_str()}"]
+        rows = str(board).split("\n")
+        for i, row in enumerate(rows):
+            lines.append(f"  {8 - i} {row}")
+        lines.append("    a b c d e f g h")
+        lines.append(f"FEN: {board.fen()}")
+        turn = "White" if board.turn == chess.WHITE else "Black"
+        check = " — IN CHECK" if board.is_check() else ""
+        if board.is_checkmate():
+            lines.append(f"CHECKMATE — {turn} is mated here.")
+            return "\n".join(lines)
+        if board.is_stalemate():
+            lines.append("STALEMATE — this line ends in a draw.")
+            return "\n".join(lines)
+        lines.append(f"{turn} to move{check}.")
+        for color, label in ((chess.WHITE, "White"), (chess.BLACK, "Black")):
+            findings = _loose_pieces(board, color)
+            if findings:
+                lines.append(f"{label} pieces in danger here:")
+                lines.extend(f"  - {f}" for f in findings)
+        captures = [board.san(m) for m in board.legal_moves if board.is_capture(m)]
+        checks = [board.san(m) for m in board.legal_moves if board.gives_check(m)]
+        lines.append(f"{turn}'s captures here: {', '.join(captures) if captures else '(none)'}")
+        lines.append(f"{turn}'s checks here: {', '.join(checks) if checks else '(none)'}")
+        return "\n".join(lines)
+
+
+VIRTUAL = VirtualBoard()
+
+
 def pinned_pieces(fen: str) -> str:
     board = _board(fen)
     lines = []

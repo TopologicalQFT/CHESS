@@ -83,3 +83,64 @@ def test_pinned_pieces():
 def test_invalid_fen():
     with pytest.raises(ValueError):
         toolkit.preview_move("garbage", "e4")
+
+
+# ── Imagination board ───────────────────────────────────────────
+
+def fresh_vb() -> toolkit.VirtualBoard:
+    return toolkit.VirtualBoard()
+
+
+def test_imagine_legal_line():
+    vb = fresh_vb()
+    out = vb.start(chess.STARTING_FEN)
+    assert "Virtual board set" in out
+    out = vb.push(["e4", "e5", "Nf3", "Nc6"])
+    assert "Imagined: e4 e5 Nf3 Nc6" in out
+    assert "White to move" in out
+    assert vb.line == ["e4", "e5", "Nf3", "Nc6"]
+
+
+def test_imagine_catches_illegal_combination_move():
+    # Game 4's failure shape: a line whose later move is geometrically impossible.
+    vb = fresh_vb()
+    vb.start(chess.STARTING_FEN)
+    out = vb.push(["e4", "e5", "Nf3", "Nc6", "Nxe5", "Nxe5", "Ke3"])  # Ke3 illegal
+    assert "ILLEGAL" in out
+    assert "Ke3" in out
+    # State stops at the last legal position; the line is intact up to there
+    assert vb.line == ["e4", "e5", "Nf3", "Nc6", "Nxe5", "Nxe5"]
+
+
+def test_imagine_undo_branches():
+    vb = fresh_vb()
+    vb.start(chess.STARTING_FEN)
+    vb.push(["e4", "c5"])
+    out = vb.undo(1)
+    assert vb.line == ["e4"]
+    assert "Black to move" in out
+    out = vb.push(["e5"])  # different branch
+    assert vb.line == ["e4", "e5"]
+
+
+def test_imagine_reports_danger():
+    vb = fresh_vb()
+    # After 1.e4 e5 2.Qh5: the f7 pawn situation and Qxe5+ ideas exist;
+    # push g6?? and the report must show Qxe5+ available to White
+    vb.start(chess.STARTING_FEN)
+    out = vb.push(["e4", "e5", "Qh5", "g6"])
+    assert "Qxe5+" in out  # listed among White's captures/checks here
+
+
+def test_imagine_detects_mate_in_line():
+    vb = fresh_vb()
+    vb.start(chess.STARTING_FEN)
+    out = vb.push(["e4", "e5", "Qh5", "Nc6", "Bc4", "Nf6", "Qxf7"])
+    assert "CHECKMATE" in out
+
+
+def test_imagine_requires_start():
+    vb = fresh_vb()
+    assert "imagine_start" in vb.push(["e4"])
+    assert "imagine_start" in vb.undo()
+    assert "imagine_start" in vb.show()

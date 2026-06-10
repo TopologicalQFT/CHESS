@@ -42,8 +42,9 @@ Your own analysis equipment — board FACTS, never judgment. Every tool takes th
 | `list_loose_pieces(fen)` | Hanging pieces, both sides | Start of your thinking each move: your urgent problems + their free targets |
 | `opponent_replies(fen)` | Their checks & captures if you passed | "What is their threat?" — step 1 of the routine |
 | `pinned_pieces(fen)` | Absolutely pinned pieces, both colors | Before trusting any defender, and before moving a piece near your king's lines |
+| `imagine_start(fen)` → `imagine_move([...])` → `imagine_undo(n)` / `imagine_show()` | **Your imagination board** — walk a line forward (both sides' moves), every move validated, danger facts at each stop; undo to branch | ANY multi-move calculation. Start from the current report's FEN each turn |
 
-Typical move = 1–3 toolkit calls. Don't call all five every move; match the tool to the question your reasoning hits.
+Typical move = 1–3 toolkit calls. Don't call them all every move; match the tool to the question your reasoning hits. The imagination board never touches the real game — `make_move` is the only tool that plays for real.
 
 ## Game loop
 
@@ -102,7 +103,7 @@ PREP: if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → routine
 ```
 
 **Step 0 of every turn — read your own last PLAN/PREP first:**
-- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK flag you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. That's your 3-second move. Only preps marked **(verified)** qualify — verified means previewed on the projected FEN when you prepared it (chain `preview_move`). Unverified preps say "(check first)" and must be checked before playing.
+- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK flag you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. That's your 3-second move. Only preps marked **(verified)** qualify — verified means you walked the line on the imagination board when you prepared it (`imagine_move` validated every move). Unverified preps say "(check first)" and must be checked before playing.
 - **Quiet move, PLAN still applies** → continue the plan with minimal deliberation. A quiet reply to a quiet move doesn't reset your thinking.
 - **Anything surprising** → the prep is void; run the routine honestly.
 
@@ -115,7 +116,7 @@ PREP: if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → routine
 2. **Loose pieces, both sides:** `list_loose_pieces(fen)` when in doubt. Pins make defenders fake: `pinned_pieces(fen)`.
 3. **Candidates:** 2–3 moves, compare their best answers concretely.
 4. **Simulate before committing:** `preview_move(fen, move)` for captures, pawn pushes, and "trades". Check for self-opened lines (blunder mode 8) and verify trades have a recapturer (mode 9).
-5. **Combinations — verify EVERY move of the line, not just the first.** `preview_move` output includes the resulting FEN; feed that FEN into the next `preview_move` to verify your follow-up ON the projected position. A combination is only as legal as its least-checked move (mode 12: a queen was lost to "9.Nxf6+" — not a knight move). Knight moves specifically: valid iff (file-diff, rank-diff) is (1,2) or (2,1) — compute it explicitly for every knight move in a calculated line.
+5. **Combinations — calculate on the imagination board, never in prose.** `imagine_start(current fen)`, then `imagine_move(["exd4", "Bxd1", "Nxf6+"])` — every move of the line is validated as you imagine it, and an illegal move stops the line cold (mode 12: a queen was lost to "9.Nxf6+", which was never a legal knight move; the imagination board would have rejected it instantly). Read the danger facts at the end of the line, `imagine_undo` to compare branches. A line you haven't walked on the imagination board is a guess, not a calculation.
 6. **Legality:** the move must be in the legal moves list.
 
 Even on fast moves, keep the one-glance habit: is anything of mine hanging per the report's own lists?
