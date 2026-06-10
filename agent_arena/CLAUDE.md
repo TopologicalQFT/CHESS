@@ -97,24 +97,25 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
    - **Under 1:00:** OBSERVE = one glance (am I in check? is anything of mine hanging?); GOAL carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
    - The GOAL/THEIRS/PREP lines are written at EVERY gate. They cost ~20 tokens and they're what wins blitz (game 5's winner: seven instant PREP hits).
 
-## Continuity: don't re-solve the position every turn
+## The game notebook: your full memory of this game
 
-Your biggest time leak is re-deriving everything from scratch each move. A player who calculated "if he plays X, I answer Y" answers Y in three seconds when X appears. Be that player.
+Three summary lines are not enough to hold a game in your head. Each game gets a **notebook file**: create `game_notes/<room_id>.md` when the game starts (copy `game_notes/TEMPLATE.md`) and maintain it for the whole game. It holds:
 
-**End EVERY turn's reasoning with three compact lines** (they are a message to next-turn-you):
-```
-GOAL:   queenside minority attack — b4-b5 next, rook to b1
-THEIRS: his rook lift + Qd7 point at a kingside mating attack
-PREP:   if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → loop
-```
-These three lines are ~20 tokens of internal reasoning, NOT narration. **Blitz suppresses chat — NEVER these.** (Game 5 was lost partly because dropping narration silently dropped the planning discipline with it. They are different things.)
+- **My plan** — the long-term strategy, not just the next move
+- **Their plan** — evidence-based ("his last 3 moves point at..."), updated as evidence accumulates
+- **My weaknesses / Their weaknesses** — squares, pawns, king cover, loose pieces that keep mattering
+- **Piece roles** — each of your pieces: its CURRENT jobs (what it defends, what it blocks, what it's aimed at). Update when pieces move. This is the standing answer to "a piece can't do two jobs" — the Nf3 disaster existed because no role map existed.
+- **PREP** — predicted replies and verified answers
+- **Move notes** — one line per move when something is worth remembering
 
-**Step 0 of every turn — read your own last GOAL/THEIRS/PREP first:**
-- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK flag you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. That's your 3-second move. Only preps marked **(verified)** qualify — verified means you walked the line on the imagination board when you prepared it (`imagine_move` validated every move). Unverified preps say "(check first)" and must be checked before playing.
-- **Quiet move, GOAL still applies** → run the loop at low depth: one-clause OBSERVE (does their quiet move change THEIRS?), candidates from the standing GOAL. A quiet reply to a quiet move doesn't reset your thinking — but beware: a quiet piece re-route can BE the plan (game 5: Nf1 was labeled "routine" and was the start of the mating attempt). That's what the THEIRS line is for.
-- **Anything surprising** → the prep is void; run the routine honestly.
+**When to update:** after your move in untimed games; in timed games, **on the opponent's clock** — when `wait_for_my_turn` times out, update the notebook and extend PREP instead of idling. Your own turn stays fast because the thinking is already written down.
 
-**Think on the opponent's clock:** in timed games, when `wait_for_my_turn` times out and the position is sharp, spend the interval preparing answers to their two most likely replies — the PREP line then already exists when your turn arrives. Tokens spent there convert into clock time, the scarcer resource.
+**Step 0 of every turn — consult the notebook (and your last GOAL/THEIRS/PREP lines):**
+- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK flag you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. That's your 3-second move. Only preps marked **(verified)** qualify — walked on the imagination board at prep time. Unverified preps say "(check first)".
+- **Quiet move, plan still applies** → run the loop at low depth: does their quiet move change "Their plan"? But beware: a quiet piece re-route can BE the plan (game 5: Nf1 was labeled "routine" and was the start of the mating attempt). That's what the Their-plan section watches for.
+- **Anything surprising** → preps are void; run the loop at full depth and rewrite the affected notebook sections.
+
+Still end every turn's reasoning with the three quick lines (GOAL / THEIRS / PREP) — they're the turn's delta; the notebook is the full picture. **Blitz suppresses chat — never the notebook, never the lines.**
 
 ## The move loop — EVERY move, blitz or not. Depth scales; steps NEVER skip.
 
@@ -122,18 +123,20 @@ This is not a "critical moves" routine. It runs on every single move of every ga
 
 0. **PREP check** (see Continuity) — if their move matches a verified prep and nothing surprises, play it. The loop already ran when you prepared it; that's why it's fast, not skipped.
 
-1. **OBSERVE the context change.** Their move: what do they **WANT** (the plan, not just the immediate threat)? What is newly attacked? What did it STOP defending? What weakness emerged — theirs AND yours? Update your THEIRS line if the evidence moved. *(Tools when unsure: `opponent_replies`, `list_loose_pieces`, `pinned_pieces`.)*
+1. **OBSERVE the context change.** Their move: what do they **WANT** (the plan, not just the immediate threat)? What is newly attacked? What did it STOP defending? What weakness emerged — theirs AND yours? Update the notebook's "Their plan" if the evidence moved.
 
-2. **CANDIDATES from goals.** Restate your GOAL (one phrase — carry it over if unchanged) against THEIRS. Candidates (2–3 normally; 1 under blitz gates) must **serve your goal or answer theirs** — a move that does neither needs a concrete tactical justification. "Looks active" is not a justification (game 5, move 14: observed "preparing ...d5", then ignored it and played the flashy knight move).
+2. **WHAT'S HANGING — yours, then theirs. Your own scan, every move, NO tools.** The short-term, react-now information: which of your pieces are attacked (count attackers vs defenders), any check or mate threat against you, which of THEIR pieces are loose or underdefended. This scan is never outsourced and never skipped — it's your eyes on the board, and it feeds both defense (react to what burns) and offense (their loose piece is a candidate target). Toolkit calls are for verifying chosen lines later, not for doing this scan.
 
-3. **COMMIT with role-awareness.** For the chosen move:
-   - **What job was the moving piece doing?** And — the part that loses games — **what jobs do the pieces your line RELIES ON have?** A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4"; cashing job one forgot job two).
+3. **CANDIDATES from goals.** Restate your GOAL against THEIRS (from the notebook). Candidates (2–3 normally; 1 under blitz gates) must **serve your plan, answer theirs, or exploit/fix something from the hanging scan** — a move that does none needs a concrete tactical justification. "Looks active" is not a justification (game 5, move 14: observed "preparing ...d5", then ignored it and played the flashy knight move).
+
+4. **COMMIT with role-awareness.** For the chosen move:
+   - **What job was the moving piece doing?** Check the notebook's piece-role map. And — the part that loses games — **what jobs do the pieces your line RELIES ON have?** A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4"; cashing job one forgot job two).
    - **What is their best reply?** Your answer becomes the PREP line.
    - **Count both directions:** your attackers, then THEIR defenders — you are measurably worse at the second, so do it deliberately (`inspect_square` settles it).
    - Captures, pawn pushes, "trades": `preview_move` mandatory. Multi-move lines: walk them on the imagination board (`imagine_start` → `imagine_move`) — a line you haven't walked is a guess, not a calculation.
    - The move must be in the legal moves list.
 
-Then write GOAL / THEIRS / PREP, and play.
+Then write GOAL / THEIRS / PREP, update the notebook (now, or on their clock in timed games — moved pieces get new roles), and play.
 
 General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns.
 
