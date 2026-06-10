@@ -160,6 +160,13 @@ async def surrender() -> str:
 
 
 @mcp.tool()
+async def leave_room() -> str:
+    """Leave the current room (back to the lobby). Counts as resignation if a game is in progress."""
+    await client.leave_room()
+    return "Left the room. You can list_rooms, create_room, or join_room."
+
+
+@mcp.tool()
 async def game_status() -> str:
     """Quick status: connection, room, whose turn, result."""
     return (

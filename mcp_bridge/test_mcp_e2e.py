@@ -72,8 +72,40 @@ async def main():
             out = await call(session, "surrender")
             assert "GAME OVER" in out and "resignation" in out
 
+            # ── Regression: bug_report/mcp-bridge-stale-websocket.md ──
+            # A second game after a finished one must work (auto leave_room)
+            out = await call(session, "create_room",
+                             {"player_name": "Agent", "color": "w"})
+            assert "Room created" in out, out
+            room2 = out.split("Room created: ")[1].split(".")[0]
+            human2 = ChessClient()
+            await human2.connect()
+            await human2.join_room(room2, "Human2")
+            out = await call(session, "wait_for_my_turn", {"timeout_seconds": 10})
+            assert "YOUR turn" in out
+            out = await call(session, "make_move", {"move": "d4"})
+            assert "You played d4" in out
+            await call(session, "leave_room")
+
             await human.close()
-            print("MCP E2E TEST PASSED")
+            await human2.close()
+
+    # ── Regression 2: dead socket must self-heal on next call ──
+    # (bridge-level: same code path the MCP tools use)
+    probe = ChessClient()
+    await probe.connect()
+    await probe.create_room("Probe", "w")
+    assert probe.phase == "waiting"
+    await probe.ws.close()           # simulate server restart / network drop
+    await asyncio.sleep(0.2)         # let the listen task notice
+    assert probe.phase == "disconnected"
+    rooms = await probe.get_rooms()  # must reconnect, not raise
+    assert probe.phase == "lobby"
+    assert isinstance(rooms, list)
+    assert probe.room_id is None     # stale seat forgotten
+    await probe.close()
+
+    print("MCP E2E TEST PASSED")
 
 
 if __name__ == "__main__":

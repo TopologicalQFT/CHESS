@@ -56,16 +56,40 @@ class ChessClient:
         self.ws = None
         self.phase = "disconnected"
 
+    def _reset_room_state(self) -> None:
+        """Forget the seat — after leaving a room or losing the connection
+        (a fresh WebSocket is a fresh server session; old seats are gone)."""
+        self.room_id = None
+        self.my_color = None
+        self.result = None
+        self.last_error = None
+
     async def _send(self, payload: dict) -> None:
-        await self.connect()
-        await self.ws.send(json.dumps(payload))
+        if self.ws is None:
+            # Reconnect: the old server session (and any seat) is gone
+            self._reset_room_state()
+            await self.connect()
+        try:
+            await self.ws.send(json.dumps(payload))
+        except websockets.ConnectionClosed:
+            # Socket died since the last call — one clean reconnect + retry
+            self.ws = None
+            self._reset_room_state()
+            await self.connect()
+            await self.ws.send(json.dumps(payload))
 
     async def _listen(self) -> None:
+        ws = self.ws
         try:
-            async for raw in self.ws:
+            async for raw in ws:
                 self._handle(json.loads(raw))
         except (websockets.ConnectionClosed, asyncio.CancelledError):
-            self.phase = "disconnected"
+            pass
+        finally:
+            # Only clear if a reconnect hasn't already replaced the socket
+            if self.ws is ws:
+                self.ws = None
+                self.phase = "disconnected"
             self._pulse()
 
     def _handle(self, msg: dict) -> None:
@@ -121,14 +145,26 @@ class ChessClient:
         return self.rooms
 
     async def create_room(self, player_name: str, color: str = "random") -> None:
+        if self.phase == "finished":
+            await self.leave_room()
         self.last_error = None
         await self._send({"type": "create_room", "player_name": player_name, "color": color})
         await self._wait_for(lambda: self.phase == "waiting" or self.last_error, timeout=5)
 
     async def join_room(self, room_id: str, player_name: str) -> None:
+        if self.phase == "finished":
+            await self.leave_room()
         self.last_error = None
         await self._send({"type": "join_room", "room_id": room_id, "player_name": player_name})
         await self._wait_for(lambda: self.phase == "playing" or self.last_error, timeout=5)
+
+    async def leave_room(self) -> None:
+        """Leave the current room (resigns first if a game is running)."""
+        if self.room_id is not None and self.ws is not None:
+            await self._send({"type": "leave_room"})
+        self._reset_room_state()
+        if self.phase != "disconnected":
+            self.phase = "lobby"
 
     # ── Game actions ─────────────────────────────────────────
 

@@ -3,6 +3,7 @@
 **Date:** 2026-06-10
 **Component:** `mcp_bridge/` (Phase 2 MCP bridge)
 **Severity:** High — makes the agent unable to play a second game without a manual MCP reconnect.
+**Status:** ✅ FIXED 2026-06-10 (dev session). Root causes confirmed: (1) `_listen` marked the phase `disconnected` but never cleared `self.ws`, so `connect()` believed it was still connected and every send hit the dead socket; (2) separately, the bridge had no `leave_room`, so even a healthy reconnect couldn't start a second game ("Already in a room"). Fix: `_send` now reconnects on dead/missing sockets (resetting stale seat state), `_listen` clears `self.ws` on close, `leave_room` added as a bridge method + MCP tool, and `create_room`/`join_room` auto-leave finished rooms. Regression tests in `mcp_bridge/test_mcp_e2e.py` cover both the second-game flow and the dead-socket self-heal.
 
 ## Summary
 
