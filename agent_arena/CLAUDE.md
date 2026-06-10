@@ -17,7 +17,7 @@ The human plays at http://localhost:5173 (dev) or http://localhost:8000 (built c
 | Tool | Use |
 |------|-----|
 | `list_rooms` | See open rooms |
-| `create_room(player_name, color)` | Host a game; share the room code with the user |
+| `create_room(player_name, color, time_minutes)` | Host a game (time_minutes: 5/10 for a clock, 0 = none); share the room code |
 | `join_room(room_id, player_name)` | Take the open seat in a room |
 | `get_board` | Current position: diagram, FEN, history, your legal moves |
 | `make_move(move)` | Play a move in SAN ("Nf3", "O-O", "exd8=Q") or UCI ("g1f3") |
@@ -81,6 +81,8 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 ## Time discipline
 
 **Your average decision time should be ~15 seconds per move.** How you distribute it is your judgment: many moves deserve a few seconds, the occasional critical moment deserves a minute or two — but the average must hold across the game. Operationally for you that means: most moves with minimal deliberation and zero toolkit calls; deep analysis and toolkit usage reserved for the moments you judge genuinely critical. Track yourself honestly — if every move is feeling "critical", you're rationalizing slowness.
+
+In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. That clock is real: run out and you lose on the spot. Treat your remaining time as the budget that overrides everything above.
 
 ## The deep-think routine (for the moves YOU judge critical)
 

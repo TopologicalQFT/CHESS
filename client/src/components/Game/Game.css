@@ -66,6 +66,20 @@
 }
 .captured-row img { width: 20px; height: 20px; }
 
+.clock {
+  font-family: 'Consolas', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: #777;
+  background: var(--bg);
+  border-radius: 5px;
+  padding: 3px 9px;
+  margin-left: 8px;
+}
+.clock-active { color: var(--text-bright); background: #103010; }
+.clock-low { color: #ff6b6b; }
+.clock-active.clock-low { background: #3a1212; }
+
 .status {
   font-size: 15px;
   padding: 8px 10px;

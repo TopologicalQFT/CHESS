@@ -34,6 +34,7 @@ class ChessClient:
         self.pgn = ""
         self.last_san: Optional[str] = None
         self.chat_inbox: list = []  # messages from others since last drain
+        self.clock: Optional[dict] = None  # {"w": sec, "b": sec} when timed
         self.result: Optional[dict] = None
         self.last_error: Optional[str] = None
         self.opponent_connected = True
@@ -112,6 +113,7 @@ class ChessClient:
             self.is_check = False
             self.result = None
             self.last_san = None
+            self.clock = msg.get("clock")
             self.phase = "playing"
         elif t == "board_update":
             self.fen = msg["fen"]
@@ -119,6 +121,7 @@ class ChessClient:
             self.is_check = msg["is_check"]
             self.pgn = msg["pgn"]
             self.last_san = msg.get("move_san")
+            self.clock = msg.get("clock")
         elif t == "game_over":
             self.result = {
                 "result": msg["result"],
@@ -152,11 +155,15 @@ class ChessClient:
         await self._wait_change(2)
         return self.rooms
 
-    async def create_room(self, player_name: str, color: str = "random") -> None:
+    async def create_room(self, player_name: str, color: str = "random",
+                          time_control: Optional[int] = None) -> None:
         if self.phase == "finished":
             await self.leave_room()
         self.last_error = None
-        await self._send({"type": "create_room", "player_name": player_name, "color": color})
+        payload = {"type": "create_room", "player_name": player_name, "color": color}
+        if time_control:
+            payload["time_control"] = time_control
+        await self._send(payload)
         await self._wait_for(lambda: self.phase == "waiting" or self.last_error, timeout=5)
 
     async def join_room(self, room_id: str, player_name: str) -> None:

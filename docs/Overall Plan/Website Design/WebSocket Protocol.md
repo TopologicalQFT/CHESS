@@ -13,8 +13,12 @@ Communication protocol between React frontend and Python backend for [[Chess Web
 ```json
 { "type": "get_rooms" }
 
-{ "type": "create_room", "player_name": "Alice", "color": "w" }
+{ "type": "create_room", "player_name": "Alice", "color": "w", "time_control": 300 }
 // color: "w" | "b" | "random"
+// time_control: seconds per player (UI offers 300/600), null/absent = no clock.
+// Timed games: game_started/board_update carry "clock": {"w": sec, "b": sec};
+// running out of time → game_over {"result": "timeout"} (draw instead if the
+// opponent has insufficient mating material).
 
 { "type": "join_room", "room_id": "abc123", "player_name": "Bob" }
 

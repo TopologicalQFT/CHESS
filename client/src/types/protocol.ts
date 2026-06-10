@@ -17,7 +17,10 @@ export interface RoomSummary {
   created_at: string
   white_name?: string
   black_name?: string
+  time_control?: number | null
 }
+
+export type Clock = { w: number; b: number } | null
 
 export interface ChatMessage {
   sender: string
@@ -26,7 +29,7 @@ export interface ChatMessage {
 }
 
 export interface GameResult {
-  result: 'checkmate' | 'stalemate' | 'resignation' | 'draw'
+  result: 'checkmate' | 'stalemate' | 'resignation' | 'draw' | 'timeout'
   winner: Color | null
   reason: string | null
   pgn: string
@@ -44,14 +47,15 @@ export interface BoardUpdateFields {
   captured: { w: string[]; b: string[] }
   move_san: string | null
   fullmove_number: number
+  clock?: Clock
 }
 
 export type ServerMessage =
   | ({ type: 'room_list'; rooms: RoomSummary[] })
   | ({ type: 'room_created'; room_id: string; color: Color })
   | ({ type: 'room_joined'; opponent_name: string })
-  | ({ type: 'game_started'; fen: string; your_color: Color | null; white_name: string; black_name: string; legal_moves: LegalMove[]; turn: Color })
-  | ({ type: 'spectate_joined'; room_id: string; room_state: string; white_name: string; black_name: string; chat: ChatMessage[] } & Partial<BoardUpdateFields>)
+  | ({ type: 'game_started'; fen: string; your_color: Color | null; white_name: string; black_name: string; legal_moves: LegalMove[]; turn: Color; time_control: number | null; clock: Clock })
+  | ({ type: 'spectate_joined'; room_id: string; room_state: string; white_name: string; black_name: string; chat: ChatMessage[]; time_control?: number | null; clock?: Clock } & Partial<BoardUpdateFields>)
   | ({ type: 'chat' } & ChatMessage)
   | ({ type: 'board_update' } & BoardUpdateFields)
   | ({ type: 'game_over' } & GameResult)
@@ -68,7 +72,7 @@ export type ServerMessage =
 
 export type ClientMessage =
   | { type: 'get_rooms' }
-  | { type: 'create_room'; player_name: string; color: Color | 'random' }
+  | { type: 'create_room'; player_name: string; color: Color | 'random'; time_control?: number | null }
   | { type: 'join_room'; room_id: string; player_name: string }
   | { type: 'spectate'; room_id: string; player_name?: string }
   | { type: 'chat'; text: string }

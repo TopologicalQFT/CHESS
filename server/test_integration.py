@@ -205,6 +205,48 @@ def test_spectator_flow(server):
     asyncio.run(scenario())
 
 
+def test_clock_flow(server):
+    async def scenario():
+        async with connect(URL) as alice, connect(URL) as bob:
+            await recv_until(alice, "room_list")
+            await recv_until(bob, "room_list")
+            # 2-second clock: white flags if she doesn't move
+            await send(alice, {"type": "create_room", "player_name": "Alice",
+                               "color": "w", "time_control": 2})
+            created = await recv_until(alice, "room_created")
+            await send(bob, {"type": "join_room", "room_id": created["room_id"],
+                             "player_name": "Bob"})
+            start = await recv_until(alice, "game_started")
+            assert start["time_control"] == 2
+            assert start["clock"] == {"w": 2, "b": 2}
+
+            # Alice moves quickly — her clock is deducted, Bob's untouched
+            await send(alice, {"type": "move", "from": "e2", "to": "e4"})
+            up = await recv_until(alice, "board_update")
+            assert up["clock"]["w"] <= 2
+            assert up["clock"]["b"] == 2
+
+            # Bob never moves → flags → Alice wins on time
+            over = await recv_until(alice, "game_over")
+            assert over["result"] == "timeout"
+            assert over["winner"] == "w"
+
+    asyncio.run(scenario())
+
+
+def test_clock_absent_without_time_control(server):
+    async def scenario():
+        async with connect(URL) as alice, connect(URL) as bob:
+            _, start_a, _ = await start_game(alice, bob)
+            assert start_a["time_control"] is None
+            assert start_a["clock"] is None
+            await send(alice, {"type": "move", "from": "e2", "to": "e4"})
+            up = await recv_until(bob, "board_update")
+            assert up["clock"] is None
+
+    asyncio.run(scenario())
+
+
 def test_chat_flow(server):
     async def scenario():
         async with connect(URL) as alice, connect(URL) as bob, connect(URL) as carol:

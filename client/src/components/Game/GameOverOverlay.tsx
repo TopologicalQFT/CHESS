@@ -10,13 +10,15 @@ export function GameOverOverlay({ onAnalyze }: { onAnalyze: () => void }) {
       const reason = result.reason?.replace(/_/g, ' ') ?? result.result
       return `Draw — ${reason}`
     }
+    const how =
+      result.result === 'checkmate' ? 'by checkmate'
+      : result.result === 'timeout' ? 'on time'
+      : 'by resignation'
     if (state.isSpectator) {
       const winnerName = result.winner === 'w' ? state.whiteName : state.blackName
-      const how = result.result === 'checkmate' ? 'by checkmate' : 'by resignation'
       return `${winnerName} wins ${how}`
     }
     const iWon = result.winner === me
-    const how = result.result === 'checkmate' ? 'by checkmate' : 'by resignation'
     return iWon ? `You win ${how}! 🎉` : `You lose ${how}`
   })()
 

@@ -4,9 +4,35 @@ import { pieceSrc } from '../Board/pieces'
 import type { PieceCode } from '../../utils/fen'
 import { ChatPanel } from './ChatPanel'
 
+function useNow(active: boolean): number {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    if (!active) return
+    const t = setInterval(() => setNow(Date.now()), 250)
+    return () => clearInterval(t)
+  }, [active])
+  return now
+}
+
+function formatClock(seconds: number): string {
+  const s = Math.max(0, Math.ceil(seconds))
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
 export function Sidebar() {
   const { state, actions } = useGame()
   const [confirmSurrender, setConfirmSurrender] = useState(false)
+  const now = useNow(state.clock !== null && state.view === 'playing')
+
+  // Locally tick down the side to move; the server value is authoritative
+  const liveClock = (color: 'w' | 'b'): number | null => {
+    if (!state.clock) return null
+    let value = state.clock[color]
+    if (state.view === 'playing' && state.turn === color) {
+      value -= (now - state.clockAt) / 1000
+    }
+    return value
+  }
 
   const me = state.myColor ?? 'w'
   const opp = me === 'w' ? 'b' : 'w'
@@ -28,13 +54,15 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       {spectator && <div className="spectator-badge">👁 Spectating</div>}
-      <PlayerRow name={names[opp]} color={opp} captured={state.captured} myRow={false} />
+      <PlayerRow name={names[opp]} color={opp} captured={state.captured} myRow={false}
+        clock={liveClock(opp)} active={state.view === 'playing' && state.turn === opp} />
       <div className={`status ${!spectator && state.turn === me && state.view === 'playing' ? 'my-turn' : ''}`}>
         {statusText}
       </div>
       <MoveHistory pgn={state.pgn} />
       <ChatPanel />
-      <PlayerRow name={names[me]} color={me} captured={state.captured} myRow={!spectator} />
+      <PlayerRow name={names[me]} color={me} captured={state.captured} myRow={!spectator}
+        clock={liveClock(me)} active={state.view === 'playing' && state.turn === me} />
       {spectator && (
         <button className="btn-flat" onClick={actions.leaveRoom}>Leave</button>
       )}
@@ -57,11 +85,13 @@ export function Sidebar() {
   )
 }
 
-function PlayerRow({ name, color, captured, myRow }: {
+function PlayerRow({ name, color, captured, myRow, clock, active }: {
   name: string
   color: 'w' | 'b'
   captured: { w: string[]; b: string[] }
   myRow: boolean
+  clock: number | null
+  active: boolean
 }) {
   // Pieces THIS player has captured = opponent's lost pieces
   const taken = captured[color === 'w' ? 'b' : 'w']
@@ -79,6 +109,11 @@ function PlayerRow({ name, color, captured, myRow }: {
           />
         ))}
       </span>
+      {clock !== null && (
+        <span className={`clock ${active ? 'clock-active' : ''} ${clock < 30 ? 'clock-low' : ''}`}>
+          {formatClock(clock)}
+        </span>
+      )}
     </div>
   )
 }

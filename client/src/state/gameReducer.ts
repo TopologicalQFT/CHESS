@@ -1,4 +1,4 @@
-import type { ChatMessage, Color, GameResult, LegalMove, RoomSummary, ServerMessage } from '../types/protocol'
+import type { ChatMessage, Clock, Color, GameResult, LegalMove, RoomSummary, ServerMessage } from '../types/protocol'
 
 export type View = 'lobby' | 'waiting' | 'playing' | 'finished'
 
@@ -21,6 +21,8 @@ export interface GameState {
   captured: { w: string[]; b: string[] }
 
   chat: ChatMessage[]
+  clock: Clock          // server-reported remaining seconds
+  clockAt: number       // Date.now() when that report arrived (for local ticking)
   result: GameResult | null
   rematchOffered: boolean
   rematchRequested: boolean
@@ -46,6 +48,8 @@ export const initialState: GameState = {
   pgn: '',
   captured: { w: [], b: [] },
   chat: [],
+  clock: null,
+  clockAt: 0,
   result: null,
   rematchOffered: false,
   rematchRequested: false,
@@ -102,6 +106,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
         spectating.isCheck = msg.is_check ?? false
         spectating.pgn = msg.pgn ?? ''
         spectating.captured = msg.captured ?? { w: [], b: [] }
+        spectating.clock = msg.clock ?? null
+        spectating.clockAt = Date.now()
       }
       return spectating
     }
@@ -120,6 +126,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
         isCheck: false,
         pgn: '',
         captured: { w: [], b: [] },
+        clock: msg.clock ?? null,
+        clockAt: Date.now(),
         result: null,
         rematchOffered: false,
         rematchRequested: false,
@@ -137,6 +145,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
         isCheck: msg.is_check,
         pgn: msg.pgn,
         captured: msg.captured,
+        clock: msg.clock ?? null,
+        clockAt: Date.now(),
       }
 
     case 'game_over':

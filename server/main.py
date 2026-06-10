@@ -157,6 +157,7 @@ async def on_create_room(ws: WebSocket, session: Session, data: dict) -> None:
 
     color = msg.color if msg.color in ("w", "b") else secrets.choice(["w", "b"])
     room = manager.create_room()
+    room.time_control = msg.time_control
     room.players[color] = HumanPlayer(msg.player_name, color)
     room.sockets[color] = ws
 
@@ -251,9 +252,11 @@ async def on_spectate(ws: WebSocket, session: Session, data: dict) -> None:
         "white_name": room.players["w"].name if room.players["w"] else "?",
         "black_name": room.players["b"].name if room.players["b"] else "?",
         "chat": room.chat,
+        "time_control": room.time_control,
     }
     if room.engine is not None:
         snapshot.update(room.engine.board_update())
+        snapshot["clock"] = room.clock_snapshot()
     await ws.send_json(snapshot)
 
 

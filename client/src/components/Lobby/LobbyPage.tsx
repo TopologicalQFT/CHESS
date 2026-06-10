@@ -7,6 +7,7 @@ export function LobbyPage() {
   const { state, actions, connected } = useGame()
   const [name, setName] = useState(() => localStorage.getItem('chess_name') ?? '')
   const [color, setColor] = useState<Color | 'random'>('random')
+  const [timeControl, setTimeControl] = useState<number | null>(600)
 
   const trimmed = name.trim()
   const ready = connected && trimmed.length > 0
@@ -18,7 +19,7 @@ export function LobbyPage() {
   function create() {
     if (!ready) return
     remember()
-    actions.createRoom(trimmed, color)
+    actions.createRoom(trimmed, color, timeControl)
   }
 
   function join(roomId: string) {
@@ -53,6 +54,17 @@ export function LobbyPage() {
             </button>
           ))}
         </div>
+        <div className="color-picker">
+          {([[300, '5 min'], [600, '10 min'], [null, '∞ No limit']] as const).map(([tc, label]) => (
+            <button
+              key={label}
+              className={`color-option ${timeControl === tc ? 'active' : ''}`}
+              onClick={() => setTimeControl(tc)}
+            >
+              ⏱ {label}
+            </button>
+          ))}
+        </div>
         <button className="btn-primary" disabled={!ready} onClick={create}>
           Create Room
         </button>
@@ -72,6 +84,7 @@ export function LobbyPage() {
                     <span className="room-id">#{room.room_id}</span>
                     <span className="room-color">
                       plays {room.available_color === 'w' ? 'White' : 'Black'}
+                      {room.time_control ? ` · ⏱ ${room.time_control / 60} min` : ''}
                     </span>
                     <button className="btn-primary" disabled={!ready} onClick={() => join(room.room_id)}>
                       Join

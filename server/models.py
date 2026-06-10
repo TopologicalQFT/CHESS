@@ -12,6 +12,8 @@ class CreateRoomMsg(BaseModel):
     type: Literal["create_room"]
     player_name: str = Field(min_length=1, max_length=30)
     color: Literal["w", "b", "random"] = "random"
+    # Seconds per player; None = no clock. UI offers 300/600.
+    time_control: Optional[int] = Field(default=None, ge=1, le=7200)
 
 
 class JoinRoomMsg(BaseModel):

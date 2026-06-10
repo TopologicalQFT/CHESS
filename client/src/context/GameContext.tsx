@@ -7,7 +7,7 @@ interface GameContextValue {
   connected: boolean
   send: (msg: ClientMessage) => void
   actions: {
-    createRoom: (playerName: string, color: Color | 'random') => void
+    createRoom: (playerName: string, color: Color | 'random', timeControl: number | null) => void
     joinRoom: (roomId: string, playerName: string) => void
     spectate: (roomId: string, name?: string) => void
     sendChat: (text: string) => void
@@ -83,7 +83,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   const actions: GameContextValue['actions'] = {
-    createRoom: (playerName, color) => send({ type: 'create_room', player_name: playerName, color }),
+    createRoom: (playerName, color, timeControl) =>
+      send({ type: 'create_room', player_name: playerName, color, time_control: timeControl }),
     joinRoom: (roomId, playerName) => send({ type: 'join_room', room_id: roomId, player_name: playerName }),
     spectate: (roomId, name) => send({ type: 'spectate', room_id: roomId, player_name: name }),
     sendChat: (text) => send({ type: 'chat', text }),

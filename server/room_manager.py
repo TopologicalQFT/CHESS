@@ -4,6 +4,7 @@ import secrets
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
 
+import chess
 from fastapi import WebSocket
 
 from game_engine import GameEngine
@@ -20,6 +21,9 @@ class Room:
         self.sockets: Dict[str, Optional[WebSocket]] = {"w": None, "b": None}
         self.spectators: Set[WebSocket] = set()
         self.chat: List[dict] = []  # last CHAT_LIMIT messages, survives rematches
+        self.time_control: Optional[int] = None  # seconds per player, None = no clock
+        self.clock: Dict[str, float] = {}
+        self._turn_started: Optional[float] = None
         self.engine: Optional[GameEngine] = None
         self.created_at = datetime.now(timezone.utc).isoformat()
         self.game_task: Optional[asyncio.Task] = None
@@ -77,10 +81,25 @@ class Room:
 
     # ── Game flow ────────────────────────────────────────────
 
+    def clock_snapshot(self) -> Optional[dict]:
+        """Current remaining time per color, live-adjusted for the side to move."""
+        if self.time_control is None or not self.clock:
+            return None
+        snap = dict(self.clock)
+        if (self.state == "playing" and self._turn_started is not None
+                and self.engine is not None):
+            turn = self.engine.turn()
+            elapsed = asyncio.get_event_loop().time() - self._turn_started
+            snap[turn] = max(0.0, snap[turn] - elapsed)
+        return {"w": round(snap["w"], 1), "b": round(snap["b"], 1)}
+
     async def start_game(self) -> None:
         self.engine = GameEngine()
         self.state = "playing"
         self.rematch_votes = {"w": False, "b": False}
+        if self.time_control is not None:
+            self.clock = {"w": float(self.time_control), "b": float(self.time_control)}
+        self._turn_started = None
 
         def started_payload(your_color: Optional[str]) -> dict:
             return {
@@ -91,6 +110,8 @@ class Room:
                 "black_name": self.players["b"].name,
                 "legal_moves": self.engine.legal_moves(),
                 "turn": "w",
+                "time_control": self.time_control,
+                "clock": self.clock_snapshot(),
             }
 
         for color in ("w", "b"):
@@ -105,7 +126,8 @@ class Room:
             await self.on_state_change()
 
     async def _game_loop(self) -> None:
-        """Ask the current player for a move, apply, broadcast, repeat."""
+        """Ask the current player for a move, apply, broadcast, repeat.
+        With a time control, the wait is bounded by the mover's clock."""
         try:
             while True:
                 turn = self.engine.turn()
@@ -115,11 +137,29 @@ class Room:
                     legal_moves_uci=self.engine.legal_moves_uci(),
                     turn=turn,
                 )
-                uci = await player.request_move(request)
+                if self.time_control is not None:
+                    loop = asyncio.get_event_loop()
+                    self._turn_started = loop.time()
+                    remaining = self.clock[turn]
+                    try:
+                        uci = await asyncio.wait_for(
+                            player.request_move(request), timeout=remaining
+                        )
+                    except asyncio.TimeoutError:
+                        await self._flag(turn)
+                        return
+                    self.clock[turn] = max(0.0, remaining - (loop.time() - self._turn_started))
+                else:
+                    uci = await player.request_move(request)
+
                 if self.engine.make_move(uci) is None:
                     await self.send_to(turn, {"type": "error", "message": "Illegal move"})
                     continue
-                await self.broadcast({"type": "board_update", **self.engine.board_update()})
+                await self.broadcast({
+                    "type": "board_update",
+                    **self.engine.board_update(),
+                    "clock": self.clock_snapshot(),
+                })
 
                 result = self.engine.result()
                 if result is not None:
@@ -127,6 +167,20 @@ class Room:
                     return
         except asyncio.CancelledError:
             return  # surrender / leave / shutdown
+
+    async def _flag(self, color: str) -> None:
+        """`color` ran out of time. Win for the opponent — unless they cannot
+        possibly mate, in which case it's a draw (standard chess rule)."""
+        self.clock[color] = 0.0
+        opponent = self.opponent(color)
+        opp_chess_color = chess.WHITE if opponent == "w" else chess.BLACK
+        if self.engine.board.has_insufficient_material(opp_chess_color):
+            await self.end_game({
+                "result": "draw", "winner": None,
+                "reason": "timeout_vs_insufficient_material",
+            })
+        else:
+            await self.end_game({"result": "timeout", "winner": opponent, "reason": None})
 
     async def end_game(self, result: dict) -> None:
         self.state = "finished"
@@ -211,6 +265,7 @@ class RoomManager:
                     "creator": room.creator_name(),
                     "available_color": room.available_color(),
                     "created_at": room.created_at,
+                    "time_control": room.time_control,
                 })
             elif room.state == "playing":
                 entries.append({
@@ -221,5 +276,6 @@ class RoomManager:
                     "black_name": room.players["b"].name if room.players["b"] else "?",
                     "available_color": None,
                     "created_at": room.created_at,
+                    "time_control": room.time_control,
                 })
         return entries

@@ -43,10 +43,11 @@ try {
   await bob.goto(URL)
   await alice.getByPlaceholder('Enter your name').fill('Alice')
   await alice.getByRole('button', { name: '♔ White' }).click()
+  await alice.getByRole('button', { name: '⏱ 5 min' }).click()
   await alice.getByRole('button', { name: 'Create Room' }).click()
   await alice.waitForSelector('.room-code')
   const roomCode = (await alice.locator('.room-code').textContent()).trim()
-  log(`Alice created room ${roomCode}, sees waiting overlay`)
+  log(`Alice created room ${roomCode} (5 min clock), sees waiting overlay`)
   await alice.screenshot({ path: `${SHOTS}/01-alice-waiting.png` })
 
   await bob.getByPlaceholder('Enter your name').fill('Bob')
@@ -59,6 +60,14 @@ try {
   await bob.waitForSelector('svg.board')
   await alice.waitForSelector('text=Your turn')
   log('Game started: Alice (white) sees "Your turn"')
+
+  // Clocks render with ~5:00 and Alice's (to move) is marked active
+  const clocks = await alice.locator('.clock').allTextContents()
+  if (clocks.length !== 2 || !clocks.every((c) => /^[45]:\d{2}$/.test(c.trim()))) {
+    throw new Error(`clock display wrong: ${JSON.stringify(clocks)}`)
+  }
+  await alice.waitForSelector('.clock-active')
+  log(`Clocks shown: ${clocks.join(' / ')} — active side highlighted`)
   const bobStatus = await bob.locator('.status').textContent()
   if (!bobStatus.includes("Opponent's turn")) throw new Error(`Bob status wrong: ${bobStatus}`)
   log(`Bob (black) sees "${bobStatus.trim()}"`)

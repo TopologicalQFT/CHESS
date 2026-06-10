@@ -17,7 +17,7 @@ The human plays/watches at http://localhost:5173 (dev) or http://localhost:8000 
 | Tool | Use |
 |------|-----|
 | `list_rooms` | See open rooms |
-| `create_room(player_name, color)` | Host a game; share the room code with the user |
+| `create_room(player_name, color, time_minutes)` | Host a game (time_minutes: 5/10 for a clock, 0 = none); share the room code |
 | `join_room(room_id, player_name)` | Take the open seat in a room |
 | `get_board` | Recovery only: full history. The `wait_for_my_turn` report is authoritative |
 | `make_move(move)` | Play a move in SAN ("Nf3", "O-O", "exd8=Q") or UCI ("g1f3") |
@@ -47,6 +47,8 @@ Name yourself "Claude-Lite" unless the user says otherwise. Default `color: "ran
 ## Time discipline
 
 **Your average decision time should be ~15 seconds per move.** How you distribute it is your judgment: many moves deserve a few seconds, the occasional critical moment deserves a minute or two — but the average must hold across the game. Most moves with minimal deliberation; deep analysis reserved for the moments you judge genuinely critical. If every move is feeling "critical", you're rationalizing slowness.
+
+In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. That clock is real: run out and you lose on the spot. Treat your remaining time as the budget that overrides everything above.
 
 ## The deep-think routine (for the moves YOU judge critical — all in your head)
 

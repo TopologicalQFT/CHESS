@@ -84,6 +84,13 @@ def board_report(full: bool = False) -> str:
     lines.append("")
     lines.append(f"FEN: {board.fen()}")
     lines.append(material_line(board))
+    if client.clock:
+        mine = client.clock.get(client.my_color, 0)
+        theirs = client.clock.get("b" if client.my_color == "w" else "w", 0)
+        def fmt(s: float) -> str:
+            s = max(0, int(s))
+            return f"{s // 60}:{s % 60:02d}"
+        lines.append(f"Clock: you {fmt(mine)} — opponent {fmt(theirs)}. Flag = loss; budget accordingly.")
     history = client.pgn or "(no moves yet)"
     if not full:
         history = short_history(client.pgn) or "(no moves yet)"
@@ -117,16 +124,17 @@ async def list_rooms() -> str:
 
 
 @mcp.tool()
-async def create_room(player_name: str, color: str = "random") -> str:
+async def create_room(player_name: str, color: str = "random", time_minutes: int = 0) -> str:
     """Create a chess room and wait for an opponent to join.
 
     Args:
         player_name: Your display name.
         color: 'w', 'b', or 'random'.
+        time_minutes: Clock per player in minutes (5 or 10 typical); 0 = no clock.
     """
     if client.phase in ("waiting", "playing"):
         return f"Already in a room ({client.room_id}, state: {client.phase})."
-    await client.create_room(player_name, color)
+    await client.create_room(player_name, color, time_control=time_minutes * 60 or None)
     if client.last_error:
         return f"Error: {client.last_error}"
     return (
