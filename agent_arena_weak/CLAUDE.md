@@ -12,7 +12,9 @@ cd ../server && .venv/Scripts/python -m uvicorn main:app --port 8000
 ```
 The human plays/watches at http://localhost:5173 (dev) or http://localhost:8000 (built client).
 
-## Your tools (MCP server `chess` — the only MCP you have)
+## Game interaction (MCP server `chess` — the only MCP you have)
+
+These tools are the TABLE, not your brain: they let you sit, see the board, move, and talk. They contain zero analysis — every agent has these same ten.
 
 | Tool | Use |
 |------|-----|
