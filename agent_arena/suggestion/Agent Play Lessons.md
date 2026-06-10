@@ -51,3 +51,52 @@ mistakes actually almost happened.
 > `knowledge/strategy/LLM Blunder Modes.md` (note: the file moved to strategy/),
 > with your near-miss examples. The legal-capture-bait item (#3) was resolved via
 > the new `chess-toolkit` MCP — see the note in [[Board Report Improvements]].
+
+> ✅ **All three implemented 2026-06-10 (dev session):** (1) chained-preview combination rule added to the CLAUDE.md routine + blunder mode 12 in both variants' vaults (with your knight-geometry corollary — Nb6 and Nxf6+ are cited); (2) [[Blitz Protocol]] adopted as a standing CLAUDE.md section, and the clock is now visible in board reports (shipped minutes before your note); (3) narration policy now states: only played-and-verified moves, never calculated futures.
+
+## 2026-06-10 — Game 4 (W vs human, 5-min blitz, LOST: flag fall + queen blunder)
+
+Two independent failures, both mine. User's words: "why do you use so much time
+every move? its a blitz"; "you halucinate too much on taktics".
+
+### 1. The blunder: a combination built on an impossible move (8. Nxe5??)
+I played 8. Nxe5 having "calculated" 8...Bxd1 9. Nxf6+ regaining the queen.
+**e5→f6 is not a knight move** (it's a one-step diagonal). The combination's
+linchpin was geometrically impossible, and I even announced the line in chat
+before the opponent refuted it by simply playing 8...Bxd1.
+
+Failure shape: **I verified move 1 of my combination with `preview_move`, but
+never verified move 2 — the move the whole line depended on.** The toolkit
+accepts ANY fen: I could have called
+`preview_move(<fen after 8...Bxd1>, "Nxf6+")` — taking the FEN from the first
+preview's output — and it would have answered "not legal". One extra call,
+queen saved.
+
+**Rule: in any forced line, the regaining/punchline move must be
+toolkit-verified on the projected FEN before playing move 1.** A combination is
+only as legal as its least-checked move. Corollary for knight geometry
+specifically: a knight move is valid iff (file-diff, rank-diff) is (1,2) or
+(2,1) — e5→f6 is (1,1). Compute this explicitly for every knight move in a
+calculated line; knight-move hallucination is now my single most repeated error
+(see also game 2's Nb6 "fork" — same piece, same failure).
+
+### 2. Time management: I played a 5-minute game like a correspondence game
+What ate the clock, in order of cost:
+- **Long calculation monologues** on non-critical moves — multi-branch trees,
+  written out, with errors that then needed re-derivation. Minutes per move.
+- **A chat message after nearly every move.** Each `send_chat` is a tool
+  round-trip on MY clock once it's my turn.
+- **Toolkit calls on moves that didn't need them** (book recaptures).
+The triage table (GREEN ≈ 10s) exists in CLAUDE.md, but nothing in my behavior
+actually changed when the room had a clock — I never even knew how much time I
+had left, because the board report doesn't show the clock (see
+[[Board Report Improvements]]).
+
+Proposed blitz protocol → [[Blitz Protocol]].
+
+### 3. Don't announce unverified lines in chat
+The chat bragging "if Bxd1, Nxf6+ regains the queen" published a hallucination.
+Narration is for moves already played and verified, never for calculated
+futures — which CLAUDE.md already says, and I violated by explaining my
+combination's intent. If the reasoning for a move IS a forced line, verify the
+line before narrating it.

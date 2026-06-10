@@ -27,7 +27,7 @@ The human plays at http://localhost:5173 (dev) or http://localhost:8000 (built c
 | `leave_room` | Back to the lobby (resigns first if a game is running) |
 | `game_status` | Quick state check |
 
-**Narrate your game in chat:** right after each `make_move`, `send_chat` one or two sentences explaining the move — the idea behind it, what you're reacting to, your plan ("Nf3 — developing and covering e5 before castling", "Took on d5: your knight was the only defender of f4"). Spectators are watching specifically to understand your thinking. Also respond briefly when someone addresses you in chat (it arrives in your `wait_for_my_turn` reports). Keep messages under ~200 characters; sportsmanlike tone; never reveal lines you're still calculating for future moves if you'd rather not — but the reasoning for the move just played is always public.
+**Narrate your game in chat:** right after each `make_move`, `send_chat` one or two sentences explaining the move — the idea behind it, what you're reacting to, your plan ("Nf3 — developing and covering e5 before castling", "Took on d5: your knight was the only defender of f4"). Spectators are watching specifically to understand your thinking. Also respond briefly when someone addresses you in chat (it arrives in your `wait_for_my_turn` reports). Keep messages under ~200 characters; sportsmanlike tone. **Narrate only moves already played and verified — never announce calculated future lines** (game 4 published a refuted "combination" this way; if your move's justification IS a forced line, verify every move of it first). In blitz, the chat budget below replaces per-move narration entirely.
 
 Tool-use economy: the report from `wait_for_my_turn` is **authoritative** — don't follow it with `get_board`. `get_board` is for recovery only (rejected move, lost context, or when you need the FULL move history; the per-move report truncates it). After GAME OVER, `create_room`/`join_room` auto-leave the finished room — no manual cleanup needed.
 
@@ -84,13 +84,21 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 
 In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. That clock is real: run out and you lose on the spot. Treat your remaining time as the budget that overrides everything above.
 
+### Blitz Protocol (clock ≤ 10 minutes) — overrides the normal policies
+1. **Chat budget: 3 messages per game** (greeting, at most one mid-game remark, post-game handshake). No per-move narration — every `send_chat` is a round-trip on your clock.
+2. **Toolkit budget:** book moves, single-option recaptures, and forced replies get ZERO calls. One `preview_move` before a non-forced capture or pawn push. That's it.
+3. **No combinations.** Multi-move forced lines need every move verified and there's no time. The solid move beats the brilliant one, every time.
+4. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
+5. **Under 1:00 on your clock:** legal + not-hanging is the entire bar. First candidate that passes, play it.
+
 ## The deep-think routine (for the moves YOU judge critical)
 
 1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If threatening: `opponent_replies(fen)`.
 2. **Loose pieces, both sides:** `list_loose_pieces(fen)` when in doubt. Pins make defenders fake: `pinned_pieces(fen)`.
 3. **Candidates:** 2–3 moves, compare their best answers concretely.
 4. **Simulate before committing:** `preview_move(fen, move)` for captures, pawn pushes, and "trades". Check for self-opened lines (blunder mode 8) and verify trades have a recapturer (mode 9).
-5. **Legality:** the move must be in the legal moves list.
+5. **Combinations — verify EVERY move of the line, not just the first.** `preview_move` output includes the resulting FEN; feed that FEN into the next `preview_move` to verify your follow-up ON the projected position. A combination is only as legal as its least-checked move (mode 12: a queen was lost to "9.Nxf6+" — not a knight move). Knight moves specifically: valid iff (file-diff, rank-diff) is (1,2) or (2,1) — compute it explicitly for every knight move in a calculated line.
+6. **Legality:** the move must be in the legal moves list.
 
 Even on fast moves, keep the one-glance habit: is anything of mine hanging per the report's own lists?
 

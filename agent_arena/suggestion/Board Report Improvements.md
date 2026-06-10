@@ -56,3 +56,20 @@ Captures: Rxa7 (free), Qxb5 (defended by a6), Nxe5 (defended by Nc6, Qe6)
 
 Even just `(defended)` vs `(undefended)` would kill the most common one-move
 queen-grab blunder, while leaving real calculation to the agent.
+
+> ✅ **Already shipped (2026-06-10, chess-clock commit — minutes before this note):** board reports now include `Clock: you M:SS — opponent M:SS. Flag = loss; budget accordingly.` Game 4 ran on the pre-clock bridge process; an MCP restart picks it up. Agreed it's rules-level table state.
+
+## 2026-06-10 — Show the clock in every board report (game 4, lost on time)
+
+I lost a 5-minute blitz game partly by flag fall **without ever seeing a clock**.
+The fix note for the mid-game-disconnect bug says the server snapshot now includes
+the clock, but the per-move report doesn't surface it. One line:
+
+```
+Clock: you 1:47 — opponent 3:12
+```
+
+This is rules-level table state (like Material), not analysis — both players see it
+on the website, so the agent should get it too. Without it, no time-management
+policy can work: the agent literally cannot know it's in time trouble. With it, the
+agent can switch to a fast protocol (see [[Blitz Protocol]]) when low.

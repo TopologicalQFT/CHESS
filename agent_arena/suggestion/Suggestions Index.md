@@ -10,3 +10,4 @@ get appended to the matching note (or a new note) with a date stamp.
 | [[Token Efficiency]] | Cutting tokens per move and per game |
 | [[Docs and Knowledge Fixes]] | CLAUDE.md / knowledge folder mismatches |
 | [[Agent Play Lessons]] | Post-game self-review: near-blunders and the rules that prevent them |
+| [[Blitz Protocol]] | Fast-play rules for timed games: chat/toolkit budgets, no combinations |
