@@ -78,48 +78,23 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 | Before trading the last pieces | `knowledge/endgames/king-and-pawn/King and Pawn Index.md` | Pawn endings are exact — calculate, don't hope |
 | After losing a game | `knowledge/strategy/LLM Blunder Modes.md` | Find which one got you |
 
-## Time discipline: triage FIRST, then think
+## Time discipline
 
-Most moves deserve ~10 seconds; a few deserve ~1 minute. Knowing which is which is itself a skill — and it costs you 5 seconds, using only what the board report already tells you. **Spend your first 5 seconds deciding how to spend the rest.**
+**Your average decision time should be ~15 seconds per move.** How you distribute it is your judgment: many moves deserve a few seconds, the occasional critical moment deserves a minute or two — but the average must hold across the game. Operationally for you that means: most moves with minimal deliberation and zero toolkit calls; deep analysis and toolkit usage reserved for the moments you judge genuinely critical. Track yourself honestly — if every move is feeling "critical", you're rationalizing slowness.
 
-### The triage (read it off the report — zero calculation)
+## The deep-think routine (for the moves YOU judge critical)
 
-**Their move was a capture?** → take the RECAPTURE lane below (usually ~15s), NOT automatically RED. Most captures just want the scripted recapture.
-
-The move is **RED (think ~1 min, full routine)** if ANY of these is true:
-- The report flags their move as **CHECK**
-- Their capture has **no clean recapture** (see the recapture checklist — any point fails)
-- You intend to INITIATE a capture, a trade, or a pawn push — anything irreversible
-- The **Material:** line shows you down without a recapture pending
-- Your Captures/Checks lists contain something that wasn't there last turn
-- You're choosing a NEW plan (the old one finished or got refuted)
-- ≤12 pieces and the move touches pawns or king (endgame precision)
-
-Otherwise the move is **GREEN (~10 seconds)**: book opening moves from the repertoire, developing moves toward a known setup, quiet maneuvering when their move was also quiet. *A quiet reply to a quiet move* — if their move attacked nothing new and abandoned nothing, the position's urgency has not changed and your standing plan continues.
-
-When genuinely unsure which it is, it's RED — but "unsure" should be rare if you check the triggers honestly.
-
-### RECAPTURE lane (~15s) — their capture, your scripted answer
-Four quick checks, in order:
-1. **Exactly one piece recaptures?** (Several choices = a real decision → RED.)
-2. **Material restored after the recapture?** (Count: their capture minus your recapture. Still down → RED.)
-3. **Is the recapturing piece SAFE on the new square?** (Not attacked by something cheaper. Unsafe → RED.)
-4. **Zwischenzug glance:** do I have a check or bigger capture INSTEAD of recapturing? (Yes → RED, it might be better.)
-All four pass → recapture immediately and move on. Any fails → RED path.
-
-### GREEN path (~10s)
-One glance: is anything of mine hanging in the report's own lists? No? Play the planned move. **Zero toolkit calls, no candidate tree.**
-
-### RED path (~1 min, the full routine)
 1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If threatening: `opponent_replies(fen)`.
 2. **Loose pieces, both sides:** `list_loose_pieces(fen)` when in doubt. Pins make defenders fake: `pinned_pieces(fen)`.
 3. **Candidates:** 2–3 moves, compare their best answers concretely.
-4. **Simulate before committing:** `preview_move(fen, move)` — MANDATORY for any capture, pawn push, or "trade". Check for self-opened lines (blunder mode 8) and verify trades have a recapturer (mode 9).
+4. **Simulate before committing:** `preview_move(fen, move)` for captures, pawn pushes, and "trades". Check for self-opened lines (blunder mode 8) and verify trades have a recapturer (mode 9).
 5. **Legality:** the move must be in the legal moves list.
+
+Even on fast moves, keep the one-glance habit: is anything of mine hanging per the report's own lists?
 
 General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns.
 
-Deeper guidance lives in the vault ([[Move Selection Checklist]] expands the RED routine; strategy notes per situation in the table above).
+Deeper guidance lives in the vault ([[Move Selection Checklist]] expands the routine; strategy notes per situation in the table above).
 
 ## Filing bug reports
 
