@@ -32,6 +32,7 @@ class ChessClient:
         self.turn = "w"
         self.is_check = False
         self.pgn = ""
+        self.last_san: Optional[str] = None
         self.result: Optional[dict] = None
         self.last_error: Optional[str] = None
         self.opponent_connected = True
@@ -109,12 +110,14 @@ class ChessClient:
             self.pgn = ""
             self.is_check = False
             self.result = None
+            self.last_san = None
             self.phase = "playing"
         elif t == "board_update":
             self.fen = msg["fen"]
             self.turn = msg["turn"]
             self.is_check = msg["is_check"]
             self.pgn = msg["pgn"]
+            self.last_san = msg.get("move_san")
         elif t == "game_over":
             self.result = {
                 "result": msg["result"],

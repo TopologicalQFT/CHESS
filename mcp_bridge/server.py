@@ -14,7 +14,33 @@ client = ChessClient()
 COLOR_NAMES = {"w": "White", "b": "Black"}
 
 
-def board_report() -> str:
+PIECE_VALUES = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
+
+
+def material_line(board: chess.Board) -> str:
+    """One-line material balance from the agent's perspective."""
+    diff = 0
+    for piece_type, value in PIECE_VALUES.items():
+        diff += value * (len(board.pieces(piece_type, chess.WHITE))
+                         - len(board.pieces(piece_type, chess.BLACK)))
+    mine = diff if client.my_color == "w" else -diff
+    if mine == 0:
+        return "Material: even"
+    side = "up" if mine > 0 else "down"
+    return f"Material: you are {side} {abs(mine)} (P=1 N=B=3 R=5 Q=9)"
+
+
+def short_history(pgn: str, plies: int = 8) -> str:
+    """Last few plies of the movetext (full PGN stays available via get_board)."""
+    tokens = pgn.split()
+    # ~1.5 tokens per ply (move numbers every 2 plies)
+    keep = plies + (plies // 2) + 1
+    if len(tokens) <= keep:
+        return pgn
+    return "… " + " ".join(tokens[-keep:])
+
+
+def board_report(full: bool = False) -> str:
     """The agent's view of the position. Phase 3 will experiment here."""
     if client.phase == "finished" and client.result:
         r = client.result
@@ -38,8 +64,18 @@ def board_report() -> str:
         f"You are playing {my_color}. "
         + (f"It is YOUR turn (move {board.fullmove_number})."
            if yours else f"It is {turn_color}'s turn — wait."),
-        "",
     ]
+    # The opponent's last move, impossible to miss (their move = it's our turn now)
+    if yours and client.last_san:
+        notes = []
+        if "x" in client.last_san:
+            notes.append("a CAPTURE")
+        if client.last_san.endswith("+"):
+            notes.append("CHECK on you")
+        suffix = f" — {', '.join(notes)}!" if notes else ""
+        lines.append(f"Opponent played: {client.last_san}{suffix}")
+    lines.append("")
+
     # ASCII board, ranks 8→1
     rows = str(board).split("\n")
     for i, row in enumerate(rows):
@@ -47,11 +83,23 @@ def board_report() -> str:
     lines.append("    a b c d e f g h")
     lines.append("")
     lines.append(f"FEN: {board.fen()}")
-    lines.append(f"History: {client.pgn or '(no moves yet)'}")
+    lines.append(material_line(board))
+    history = client.pgn or "(no moves yet)"
+    if not full:
+        history = short_history(client.pgn) or "(no moves yet)"
+    lines.append(f"History{'' if full else ' (recent)'}: {history}")
     lines.append(f"Check: {'YES — your king is attacked!' if client.is_check and yours else ('yes' if client.is_check else 'no')}")
     if yours:
         sans = [board.san(m) for m in board.legal_moves]
-        lines.append(f"Your legal moves (SAN): {', '.join(sans)}")
+        captures = [s for s in sans if "x" in s]
+        checks = [s for s in sans if s.endswith("+") or s.endswith("#")]
+        quiet = [s for s in sans if s not in captures and s not in checks]
+        lines.append("Your legal moves (SAN):")
+        if captures:
+            lines.append(f"  Captures: {', '.join(captures)}")
+        if checks:
+            lines.append(f"  Checks: {', '.join(checks)}")
+        lines.append(f"  Quiet: {', '.join(quiet) if quiet else '(none)'}")
     return "\n".join(lines)
 
 
@@ -106,8 +154,9 @@ async def join_room(room_id: str, player_name: str) -> str:
 
 @mcp.tool()
 async def get_board() -> str:
-    """Show the current position: board diagram, FEN, history, legal moves."""
-    return board_report()
+    """Show the current position with FULL move history. For recovery — the report
+    from wait_for_my_turn is authoritative; you don't need this after every wait."""
+    return board_report(full=True)
 
 
 @mcp.tool()
