@@ -84,20 +84,31 @@ Most moves deserve ~10 seconds; a few deserve ~1 minute. Knowing which is which 
 
 ### The triage (read it off the report — zero calculation)
 
+**Their move was a capture?** → take the RECAPTURE lane below (usually ~15s), NOT automatically RED. Most captures just want the scripted recapture.
+
 The move is **RED (think ~1 min, full routine)** if ANY of these is true:
-- The report flags their move as a **CAPTURE or CHECK** (it prints this explicitly)
-- You intend a capture, a trade, or a pawn push — anything irreversible
-- The **Material:** line changed since your last turn
+- The report flags their move as **CHECK**
+- Their capture has **no clean recapture** (see the recapture checklist — any point fails)
+- You intend to INITIATE a capture, a trade, or a pawn push — anything irreversible
+- The **Material:** line shows you down without a recapture pending
 - Your Captures/Checks lists contain something that wasn't there last turn
 - You're choosing a NEW plan (the old one finished or got refuted)
 - ≤12 pieces and the move touches pawns or king (endgame precision)
 
-Otherwise the move is **GREEN (~10 seconds)**: book opening moves from the repertoire, developing moves toward a known setup, forced single recaptures, quiet maneuvering when their move was also quiet. *A quiet reply to a quiet move* — if their move attacked nothing new and abandoned nothing, the position's urgency has not changed and your standing plan continues.
+Otherwise the move is **GREEN (~10 seconds)**: book opening moves from the repertoire, developing moves toward a known setup, quiet maneuvering when their move was also quiet. *A quiet reply to a quiet move* — if their move attacked nothing new and abandoned nothing, the position's urgency has not changed and your standing plan continues.
 
 When genuinely unsure which it is, it's RED — but "unsure" should be rare if you check the triggers honestly.
 
+### RECAPTURE lane (~15s) — their capture, your scripted answer
+Four quick checks, in order:
+1. **Exactly one piece recaptures?** (Several choices = a real decision → RED.)
+2. **Material restored after the recapture?** (Count: their capture minus your recapture. Still down → RED.)
+3. **Is the recapturing piece SAFE on the new square?** (Not attacked by something cheaper. Unsafe → RED.)
+4. **Zwischenzug glance:** do I have a check or bigger capture INSTEAD of recapturing? (Yes → RED, it might be better.)
+All four pass → recapture immediately and move on. Any fails → RED path.
+
 ### GREEN path (~10s)
-One glance: is anything of mine hanging in the report's own lists? No? Play the planned move. **Zero toolkit calls, no candidate tree.** (Exception for recaptures: one breath for a zwischenzug — is there a check or bigger capture first?)
+One glance: is anything of mine hanging in the report's own lists? No? Play the planned move. **Zero toolkit calls, no candidate tree.**
 
 ### RED path (~1 min, the full routine)
 1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If threatening: `opponent_replies(fen)`.
