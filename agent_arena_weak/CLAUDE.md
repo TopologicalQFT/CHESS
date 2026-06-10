@@ -55,39 +55,44 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 2. **No combinations.** Multi-move forced lines need every move verified and there's no time. The solid move beats the brilliant one, every time.
 3. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
 4. **Don't create sharpness you can't afford.** In blitz, prefer the move that makes your NEXT several moves obvious.
-5. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock):
-   - **Under 3:00:** your entire think for a move fits in ~5 sentences.
-   - **Under 2:00:** NO candidate comparison — first reasonable move (recapture / answer the threat / develop). **A sharp position is NOT an exception.** A lost-on-time sharp position scores the same zero.
-   - **Under 1:00:** legal + not-hanging is the entire bar. First candidate that passes, play it.
+5. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock). The move loop's steps NEVER skip — they compress to clauses:
+   - **Under 3:00:** the whole loop in ~5 sentences, one clause per step.
+   - **Under 2:00:** one clause per step, ONE candidate (recapture / answer the threat / develop toward GOAL). **A sharp position is NOT an exception.** A lost-on-time sharp position scores the same zero.
+   - **Under 1:00:** OBSERVE = one glance (in check? anything hanging?); GOAL carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
+   - The GOAL/THEIRS/PREP lines are written at EVERY gate (~20 tokens; they're what wins blitz).
 
 ## Continuity: don't re-solve the position every turn
 
 Your biggest time leak is re-deriving everything from scratch each move. A player who calculated "if he plays X, I answer Y" answers Y in three seconds when X appears. Be that player.
 
-**End EVERY turn's reasoning with two compact lines** (a message to next-turn-you):
+**End EVERY turn's reasoning with three compact lines** (a message to next-turn-you):
 ```
-PLAN: queenside minority attack — b4-b5 next, rook to b1
-PREP: if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → routine
+GOAL:   queenside minority attack — b4-b5 next, rook to b1
+THEIRS: his knight re-route + h3 point at a kingside buildup
+PREP:   if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → loop
 ```
+These three lines are ~20 tokens of internal reasoning, NOT narration. **Blitz suppresses chat — NEVER these.**
 
-**Step 0 of every turn — read your own last PLAN/PREP first:**
+**Step 0 of every turn — read your own last GOAL/THEIRS/PREP first:**
 - **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. Only preps marked **(verified)** qualify — verified means you simulated the projected position carefully when preparing (piece geometry included). Unverified preps say "(check first)".
-- **Quiet move, PLAN still applies** → continue the plan with minimal deliberation. A quiet reply to a quiet move doesn't reset your thinking.
-- **Anything surprising** → the prep is void; run the routine honestly.
+- **Quiet move, GOAL still applies** → run the loop at low depth: one-clause OBSERVE (does their quiet move change THEIRS?), candidates from the standing GOAL. Beware: a quiet piece re-route can BE the plan — that's what the THEIRS line watches for.
+- **Anything surprising** → the prep is void; run the loop at full depth.
 
 **Think on the opponent's clock:** in timed games, when `wait_for_my_turn` times out and the position is sharp, spend the interval preparing answers to their two most likely replies.
 
-## The deep-think routine (for the moves YOU judge critical — all in your head)
+## The move loop — EVERY move, blitz or not. Depth scales; steps NEVER skip. (All in your head.)
 
-0. **PREP check** (see Continuity above) — on a hit, you're done in seconds.
-1. **Their last move:** why? What does it newly attack — and what did it STOP defending?
-2. **Loose pieces, both sides:** list every attacked piece of yours, count attackers vs defenders. Then theirs. A pinned defender is not a real defender.
-3. **Candidates:** 2–3 moves; for each, their best answer?
-4. **Simulate before committing:** picture the position AFTER your move. Which lines did it open, and what of yours now stands on them? "Trades" need a named recapturer. List their checks and captures in the new position.
-5. **Combinations — verify EVERY move of the line on the imagined position, not just the first.** A combination is only as legal as its least-checked move. Knight moves especially: valid iff (file-diff, rank-diff) is (1,2) or (2,1) — compute it explicitly.
-6. **Legality:** the move must appear in the legal moves list.
+0. **PREP check** (see Continuity) — on a hit, play it; the loop already ran at prep time.
+1. **OBSERVE the context change.** Their move: what do they **WANT** (the plan, not just the threat)? What is newly attacked? What did it STOP defending? What weakness emerged — theirs AND yours? Update THEIRS if the evidence moved.
+2. **CANDIDATES from goals.** Restate your GOAL against THEIRS. Candidates (2–3 normally; 1 under blitz gates) must **serve your goal or answer theirs** — a move doing neither needs a concrete tactical justification. "Looks active" is not a justification.
+3. **COMMIT with role-awareness.** For the chosen move:
+   - **What job was the moving piece doing?** And what jobs do the pieces your line RELIES ON (defenders, blockers) have? A piece can't do two jobs.
+   - **What is their best reply?** Your answer becomes the PREP line.
+   - **Count both directions:** your attackers, then THEIR defenders — you are measurably worse at the second, so do it deliberately.
+   - Picture the position AFTER your move: lines opened, what of yours stands on them, "trades" need a named recapturer. Multi-move lines: verify EVERY move on the imagined position (knight moves: (file-diff, rank-diff) must be (1,2) or (2,1)).
+   - The move must appear in the legal moves list.
 
-Even on fast moves, keep the one-glance habit: is anything of mine hanging per the report?
+Then write GOAL / THEIRS / PREP, and play.
 
 General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns, watch for stalemate.
 
