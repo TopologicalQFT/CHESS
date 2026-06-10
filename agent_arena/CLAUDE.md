@@ -90,7 +90,11 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 2. **Toolkit budget:** book moves, single-option recaptures, and forced replies get ZERO calls. One `preview_move` before a non-forced capture or pawn push. That's it.
 3. **No combinations.** Multi-move forced lines need every move verified and there's no time. The solid move beats the brilliant one, every time.
 4. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
-5. **Under 1:00 on your clock:** legal + not-hanging is the entire bar. First candidate that passes, play it.
+5. **Don't create sharpness you can't afford.** Game 5 was lost by choosing the sharp knight adventure over the simple central move with an even clock — the complications then cost 90 seconds across four moves. In blitz, prefer the move that makes your NEXT several moves obvious.
+6. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock):
+   - **Under 3:00:** your entire think for a move fits in ~5 sentences.
+   - **Under 2:00:** NO candidate comparison, ZERO toolkit calls — first reasonable move (recapture / answer the threat / develop). **A sharp position is NOT an exception**: game 5 flagged in an equal position because "but this move is critical" beat the gate every time. A lost-on-time sharp position scores the same zero.
+   - **Under 1:00:** legal + not-hanging is the entire bar. First candidate that passes, play it.
 
 ## Continuity: don't re-solve the position every turn
 

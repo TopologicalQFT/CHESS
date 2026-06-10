@@ -206,9 +206,12 @@ class ChessClient:
         await self._wait_for(lambda: self.phase == "playing" or self.last_error, timeout=5)
 
     async def leave_room(self) -> None:
-        """Leave the current room (resigns first if a game is running)."""
-        if self.room_id is not None and self.ws is not None:
-            await self._send({"type": "leave_room"})
+        """Leave the current room (resigns first if a game is running).
+
+        ALWAYS tells the server, even if local state says we're in the lobby —
+        local and server state can desync (ghost-room bug report), and the
+        server ignores a leave from a session that isn't seated anyway."""
+        await self._send({"type": "leave_room"})
         self._reset_room_state()
         if self.phase != "disconnected":
             self.phase = "lobby"

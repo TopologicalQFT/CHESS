@@ -54,7 +54,11 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 1. **Chat budget: 3 messages per game** (greeting, at most one mid-game remark, post-game handshake). No per-move narration.
 2. **No combinations.** Multi-move forced lines need every move verified and there's no time. The solid move beats the brilliant one, every time.
 3. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
-4. **Under 1:00 on your clock:** legal + not-hanging is the entire bar. First candidate that passes, play it.
+4. **Don't create sharpness you can't afford.** In blitz, prefer the move that makes your NEXT several moves obvious.
+5. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock):
+   - **Under 3:00:** your entire think for a move fits in ~5 sentences.
+   - **Under 2:00:** NO candidate comparison — first reasonable move (recapture / answer the threat / develop). **A sharp position is NOT an exception.** A lost-on-time sharp position scores the same zero.
+   - **Under 1:00:** legal + not-hanging is the entire bar. First candidate that passes, play it.
 
 ## Continuity: don't re-solve the position every turn
 

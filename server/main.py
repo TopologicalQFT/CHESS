@@ -147,7 +147,7 @@ async def handle_message(ws: WebSocket, session: Session, data: dict) -> None:
 
 async def on_create_room(ws: WebSocket, session: Session, data: dict) -> None:
     if session.room is not None:
-        await ws.send_json({"type": "error", "message": "Already in a room"})
+        await ws.send_json({"type": "error", "message": f"Already in a room ({session.room.room_id}) — send leave_room first"})
         return
     try:
         msg = CreateRoomMsg(**data)
@@ -170,7 +170,7 @@ async def on_create_room(ws: WebSocket, session: Session, data: dict) -> None:
 
 async def on_join_room(ws: WebSocket, session: Session, data: dict) -> None:
     if session.room is not None:
-        await ws.send_json({"type": "error", "message": "Already in a room"})
+        await ws.send_json({"type": "error", "message": f"Already in a room ({session.room.room_id}) — send leave_room first"})
         return
     try:
         msg = JoinRoomMsg(**data)
@@ -180,7 +180,16 @@ async def on_join_room(ws: WebSocket, session: Session, data: dict) -> None:
 
     room = manager.get(msg.room_id)
     if room is None:
-        await ws.send_json({"type": "error", "message": "Room not found"})
+        # 6-hex codes get typo'd when relayed by humans — offer a near-miss hint
+        near = [
+            rid for rid in manager.rooms
+            if rid.startswith(msg.room_id[:4]) or (
+                len(rid) == len(msg.room_id)
+                and sum(a != b for a, b in zip(rid, msg.room_id)) == 1
+            )
+        ]
+        hint = f" — did you mean '{near[0]}'?" if len(near) == 1 else ""
+        await ws.send_json({"type": "error", "message": f"Room not found{hint}"})
         return
     color = room.available_color()
     if color is None or room.state != "waiting":
@@ -230,7 +239,7 @@ async def on_chat(ws: WebSocket, session: Session, data: dict) -> None:
 
 async def on_spectate(ws: WebSocket, session: Session, data: dict) -> None:
     if session.room is not None:
-        await ws.send_json({"type": "error", "message": "Already in a room"})
+        await ws.send_json({"type": "error", "message": f"Already in a room ({session.room.room_id}) — send leave_room first"})
         return
     session.spectator_name = str(data.get("player_name", "")).strip()[:30] or "Spectator"
     room = manager.get(str(data.get("room_id", "")))

@@ -3,6 +3,8 @@
 Run (stdio): python server.py
 Target server: CHESS_SERVER_URL env (default ws://localhost:8000/ws)
 """
+import math
+
 import chess
 from mcp.server.fastmcp import FastMCP
 
@@ -16,18 +18,31 @@ COLOR_NAMES = {"w": "White", "b": "Black"}
 
 PIECE_VALUES = {chess.PAWN: 1, chess.KNIGHT: 3, chess.BISHOP: 3, chess.ROOK: 5, chess.QUEEN: 9}
 
+# Material seen at our previous report, for the delta alarm (per room)
+_prev_material = {"room": None, "value": None}
+
 
 def material_line(board: chess.Board) -> str:
-    """One-line material balance from the agent's perspective."""
+    """One-line material balance from the agent's perspective, with the
+    change since our last look — an instant alarm in blitz."""
     diff = 0
     for piece_type, value in PIECE_VALUES.items():
         diff += value * (len(board.pieces(piece_type, chess.WHITE))
                          - len(board.pieces(piece_type, chess.BLACK)))
     mine = diff if client.my_color == "w" else -diff
+
+    delta = ""
+    if _prev_material["room"] == client.room_id and _prev_material["value"] is not None:
+        net = mine - _prev_material["value"]
+        if net != 0:
+            delta = f" (net {net:+d} since your last look!)"
+    _prev_material["room"] = client.room_id
+    _prev_material["value"] = mine
+
     if mine == 0:
-        return "Material: even"
+        return f"Material: even{delta}"
     side = "up" if mine > 0 else "down"
-    return f"Material: you are {side} {abs(mine)} (P=1 N=B=3 R=5 Q=9)"
+    return f"Material: you are {side} {abs(mine)} (P=1 N=B=3 R=5 Q=9){delta}"
 
 
 def short_history(pgn: str, plies: int = 8) -> str:
@@ -88,9 +103,10 @@ def board_report(full: bool = False) -> str:
         mine = client.clock.get(client.my_color, 0)
         theirs = client.clock.get("b" if client.my_color == "w" else "w", 0)
         def fmt(s: float) -> str:
-            s = max(0, int(s))
+            s = max(0, math.ceil(s))  # ceil: 0.4s shows 0:01, never a false 0:00
             return f"{s // 60}:{s % 60:02d}"
-        lines.append(f"Clock: you {fmt(mine)} — opponent {fmt(theirs)}. Flag = loss; budget accordingly.")
+        warn = " FLAG IMMINENT!" if mine < 10 else ""
+        lines.append(f"Clock: you {fmt(mine)} — opponent {fmt(theirs)}. Flag = loss; budget accordingly.{warn}")
     history = client.pgn or "(no moves yet)"
     if not full:
         history = short_history(client.pgn) or "(no moves yet)"
