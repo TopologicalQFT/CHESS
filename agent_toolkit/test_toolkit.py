@@ -80,6 +80,15 @@ def test_pinned_pieces():
     assert out.count("(none)") == 2
 
 
+def test_pinned_pieces_king_pins_only():
+    # Bb5 vs Nc6 with Qd7 behind: a RELATIVE pin — deliberately NOT reported
+    # (tactical suggestion, not a rules fact; user decision 2026-06-11)
+    fen = "4k3/3q4/2n5/1B6/8/8/8/4K3 b - - 0 1"
+    out = toolkit.pinned_pieces(fen)
+    assert "Black knight on c6" not in out
+    assert out.count("(none)") == 2
+
+
 def test_invalid_fen():
     with pytest.raises(ValueError):
         toolkit.preview_move("garbage", "e4")

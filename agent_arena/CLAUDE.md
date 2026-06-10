@@ -42,7 +42,7 @@ Your own analysis equipment — board FACTS, never judgment. Every tool takes th
 | `hanging_report(fen)` | The COMPLETE attacked/undefended picture, both sides, with counts | **Once per move, Step 1** — replaces manual attacked/undefended bookkeeping |
 | `list_loose_pieces(fen)` | Hanging pieces only (subset of hanging_report) | Quick recheck inside a calculation |
 | `opponent_replies(fen)` | Their checks & captures if you passed | "What is their threat?" — step 1 of the routine |
-| `pinned_pieces(fen)` | Absolutely pinned pieces, both colors | Before trusting any defender, and before moving a piece near your king's lines |
+| `pinned_pieces(fen)` | KING pins only (the rules-level fact: moving is illegal). Relative pins are your judgment, not a tool output | Before trusting any defender near the king's lines |
 | `imagine_start(fen)` → `imagine_move([...])` → `imagine_undo(n)` / `imagine_show()` | **Your imagination board** — walk a line forward (both sides' moves), every move validated, danger facts at each stop; undo to branch | ANY multi-move calculation. Start from the current report's FEN each turn |
 
 Typical move = 1–3 toolkit calls. Don't call them all every move; match the tool to the question your reasoning hits. The imagination board never touches the real game — `make_move` is the only tool that plays for real.

@@ -296,6 +296,10 @@ VIRTUAL = VirtualBoard()
 
 
 def pinned_pieces(fen: str) -> str:
+    """King pins ONLY (absolute pins) — the rule-level fact that the piece
+    cannot legally leave the king's line. Relative pins are deliberately NOT
+    reported: they're tactical suggestions, not facts (zwischenzugs and
+    counter-tactics routinely break them), and the agent must judge those."""
     board = _board(fen)
     lines = []
     for color, label in ((chess.WHITE, "White"), (chess.BLACK, "Black")):

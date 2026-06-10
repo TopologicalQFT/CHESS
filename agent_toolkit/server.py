@@ -118,8 +118,10 @@ async def imagine_show() -> str:
 
 @mcp.tool()
 async def pinned_pieces(fen: str) -> str:
-    """Absolutely pinned pieces for both colors. A pinned piece cannot leave
-    the king's line — it may not really defend what you think it defends.
+    """KING pins only (absolute pins) — pieces that cannot legally leave the
+    king's line, for both colors. A king-pinned piece may not really defend
+    what you think it defends. (Relative pins — against queens/rooks — are
+    NOT reported: those are tactical judgments, yours to make.)
 
     Args:
         fen: The current position.
