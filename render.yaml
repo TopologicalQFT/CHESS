@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: chess
+    runtime: docker
+    plan: free
+    healthCheckPath: /health

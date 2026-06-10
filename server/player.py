@@ -39,7 +39,7 @@ class HumanPlayer(Player):
         self._pending: Optional[asyncio.Future] = None
 
     async def request_move(self, request: MoveRequest) -> str:
-        self._pending = asyncio.get_event_loop().create_future()
+        self._pending = asyncio.get_running_loop().create_future()
         try:
             return await self._pending
         finally:
