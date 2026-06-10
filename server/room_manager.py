@@ -9,6 +9,8 @@ from fastapi import WebSocket
 from game_engine import GameEngine
 from player import HumanPlayer, MoveRequest
 
+CHAT_LIMIT = 100  # messages kept per room
+
 
 class Room:
     def __init__(self, room_id: str):
@@ -17,6 +19,7 @@ class Room:
         self.players: Dict[str, Optional[HumanPlayer]] = {"w": None, "b": None}
         self.sockets: Dict[str, Optional[WebSocket]] = {"w": None, "b": None}
         self.spectators: Set[WebSocket] = set()
+        self.chat: List[dict] = []  # last CHAT_LIMIT messages, survives rematches
         self.engine: Optional[GameEngine] = None
         self.created_at = datetime.now(timezone.utc).isoformat()
         self.game_task: Optional[asyncio.Task] = None
@@ -142,6 +145,14 @@ class Room:
             "winner": self.opponent(color),
             "reason": None,
         })
+
+    async def post_chat(self, sender: str, role: str, text: str) -> None:
+        """role: 'w' | 'b' | 'spectator'. Stores and broadcasts."""
+        entry = {"type": "chat", "sender": sender, "role": role, "text": text}
+        self.chat.append(entry)
+        if len(self.chat) > CHAT_LIMIT:
+            self.chat = self.chat[-CHAT_LIMIT:]
+        await self.broadcast(entry)
 
     async def vote_rematch(self, color: str) -> None:
         if self.state != "finished":

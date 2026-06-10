@@ -19,6 +19,12 @@ export interface RoomSummary {
   black_name?: string
 }
 
+export interface ChatMessage {
+  sender: string
+  role: Color | 'spectator'
+  text: string
+}
+
 export interface GameResult {
   result: 'checkmate' | 'stalemate' | 'resignation' | 'draw'
   winner: Color | null
@@ -45,7 +51,8 @@ export type ServerMessage =
   | ({ type: 'room_created'; room_id: string; color: Color })
   | ({ type: 'room_joined'; opponent_name: string })
   | ({ type: 'game_started'; fen: string; your_color: Color | null; white_name: string; black_name: string; legal_moves: LegalMove[]; turn: Color })
-  | ({ type: 'spectate_joined'; room_id: string; room_state: string; white_name: string; black_name: string } & Partial<BoardUpdateFields>)
+  | ({ type: 'spectate_joined'; room_id: string; room_state: string; white_name: string; black_name: string; chat: ChatMessage[] } & Partial<BoardUpdateFields>)
+  | ({ type: 'chat' } & ChatMessage)
   | ({ type: 'board_update' } & BoardUpdateFields)
   | ({ type: 'game_over' } & GameResult)
   | ({ type: 'rematch_offered' })
@@ -63,7 +70,8 @@ export type ClientMessage =
   | { type: 'get_rooms' }
   | { type: 'create_room'; player_name: string; color: Color | 'random' }
   | { type: 'join_room'; room_id: string; player_name: string }
-  | { type: 'spectate'; room_id: string }
+  | { type: 'spectate'; room_id: string; player_name?: string }
+  | { type: 'chat'; text: string }
   | { type: 'move'; from: string; to: string; promotion?: string }
   | { type: 'surrender' }
   | { type: 'rematch' }

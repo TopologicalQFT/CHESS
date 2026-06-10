@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../../context/GameContext'
 import { pieceSrc } from '../Board/pieces'
 import type { PieceCode } from '../../utils/fen'
+import { ChatPanel } from './ChatPanel'
 
 export function Sidebar() {
   const { state, actions } = useGame()
@@ -32,6 +33,7 @@ export function Sidebar() {
         {statusText}
       </div>
       <MoveHistory pgn={state.pgn} />
+      <ChatPanel />
       <PlayerRow name={names[me]} color={me} captured={state.captured} myRow={!spectator} />
       {spectator && (
         <button className="btn-flat" onClick={actions.leaveRoom}>Leave</button>

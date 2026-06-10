@@ -87,7 +87,7 @@ export function LobbyPage() {
                     <button
                       className="btn-watch"
                       disabled={!connected}
-                      onClick={() => actions.spectate(room.room_id)}
+                      onClick={() => actions.spectate(room.room_id, trimmed || undefined)}
                     >
                       Watch
                     </button>

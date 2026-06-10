@@ -205,6 +205,43 @@ def test_spectator_flow(server):
     asyncio.run(scenario())
 
 
+def test_chat_flow(server):
+    async def scenario():
+        async with connect(URL) as alice, connect(URL) as bob, connect(URL) as carol:
+            room_id, _, _ = await start_game(alice, bob)
+
+            # Player chat reaches the opponent
+            await send(alice, {"type": "chat", "text": "e4 next — claiming the center"})
+            msg = await recv_until(bob, "chat")
+            assert msg["sender"] == "Alice" and msg["role"] == "w"
+            assert "center" in msg["text"]
+
+            # Late-joining spectator receives chat history in the snapshot
+            await send(carol, {"type": "spectate", "room_id": room_id, "player_name": "Carol"})
+            snap = await recv_until(carol, "spectate_joined")
+            assert any("center" in c["text"] for c in snap["chat"])
+
+            # Spectator chat reaches players, labeled as spectator
+            # (skip Alice's own echo of her earlier message)
+            await send(carol, {"type": "chat", "text": "good luck both!"})
+            for _ in range(5):
+                msg = await recv_until(alice, "chat")
+                if msg["sender"] == "Carol":
+                    break
+            assert msg["sender"] == "Carol" and msg["role"] == "spectator"
+
+            # Empty / oversized chat is ignored / clamped
+            await send(alice, {"type": "chat", "text": "   "})
+            await send(alice, {"type": "chat", "text": "x" * 600})
+            for _ in range(5):
+                msg = await recv_until(bob, "chat")
+                if msg["text"].startswith("x"):
+                    break
+            assert len(msg["text"]) == 500  # clamped, the empty one never arrived
+
+    asyncio.run(scenario())
+
+
 def test_room_listing_and_full_room(server):
     async def scenario():
         async with connect(URL) as alice, connect(URL) as bob, connect(URL) as carol:

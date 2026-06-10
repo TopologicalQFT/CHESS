@@ -191,6 +191,18 @@ async def make_move(move: str) -> str:
     )
 
 
+def chat_section() -> str:
+    """Unseen chat from opponent/spectators, appended to turn reports."""
+    inbox = client.drain_chat()
+    if not inbox:
+        return ""
+    lines = ["", "Chat received:"]
+    for msg in inbox:
+        role = COLOR_NAMES.get(msg.get("role"), "spectator")
+        lines.append(f"  [{msg.get('sender', '?')} ({role})]: {msg.get('text', '')}")
+    return "\n".join(lines)
+
+
 @mcp.tool()
 async def wait_for_my_turn(timeout_seconds: float = 55) -> str:
     """Wait until it's your turn (or the game ends). Call again if it times out.
@@ -200,10 +212,24 @@ async def wait_for_my_turn(timeout_seconds: float = 55) -> str:
     """
     state = await client.wait_for_my_turn(timeout_seconds)
     if state in ("your_turn", "game_over"):
-        return board_report()
+        return board_report() + chat_section()
     if state == "waiting_for_opponent":
-        return "Still waiting for an opponent to join. Call wait_for_my_turn again."
-    return "Opponent is still thinking. Call wait_for_my_turn again."
+        return "Still waiting for an opponent to join. Call wait_for_my_turn again." + chat_section()
+    return "Opponent is still thinking. Call wait_for_my_turn again." + chat_section()
+
+
+@mcp.tool()
+async def send_chat(message: str) -> str:
+    """Send a chat message to the room (opponent + spectators see it on the website).
+    Use it to briefly explain each move you play — one or two sentences.
+
+    Args:
+        message: The chat text (max 500 chars).
+    """
+    if client.phase not in ("waiting", "playing", "finished"):
+        return "Not in a room — nothing to chat to."
+    await client.send_chat(message[:500])
+    return "Sent."
 
 
 @mcp.tool()

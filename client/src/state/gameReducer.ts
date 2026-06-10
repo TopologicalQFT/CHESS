@@ -1,4 +1,4 @@
-import type { Color, GameResult, LegalMove, RoomSummary, ServerMessage } from '../types/protocol'
+import type { ChatMessage, Color, GameResult, LegalMove, RoomSummary, ServerMessage } from '../types/protocol'
 
 export type View = 'lobby' | 'waiting' | 'playing' | 'finished'
 
@@ -20,6 +20,7 @@ export interface GameState {
   pgn: string
   captured: { w: string[]; b: string[] }
 
+  chat: ChatMessage[]
   result: GameResult | null
   rematchOffered: boolean
   rematchRequested: boolean
@@ -44,6 +45,7 @@ export const initialState: GameState = {
   isCheck: false,
   pgn: '',
   captured: { w: [], b: [] },
+  chat: [],
   result: null,
   rematchOffered: false,
   rematchRequested: false,
@@ -89,6 +91,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         isSpectator: true,
         whiteName: msg.white_name,
         blackName: msg.black_name,
+        chat: msg.chat ?? [],
         result: null,
       }
       if (msg.fen) {
@@ -175,6 +178,12 @@ export function gameReducer(state: GameState, action: Action): GameState {
       }
       return restored
     }
+
+    case 'chat':
+      return {
+        ...state,
+        chat: [...state.chat, { sender: msg.sender, role: msg.role, text: msg.text }].slice(-100),
+      }
 
     case 'room_closed':
       // Players abandoned the room (e.g. both disconnected) — back to lobby

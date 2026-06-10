@@ -33,6 +33,7 @@ class ChessClient:
         self.is_check = False
         self.pgn = ""
         self.last_san: Optional[str] = None
+        self.chat_inbox: list = []  # messages from others since last drain
         self.result: Optional[dict] = None
         self.last_error: Optional[str] = None
         self.opponent_connected = True
@@ -126,6 +127,10 @@ class ChessClient:
                 "pgn": msg.get("pgn", ""),
             }
             self.phase = "finished"
+        elif t == "chat":
+            # Keep only others' messages (our own echo back is just confirmation)
+            if msg.get("role") != self.my_color:
+                self.chat_inbox.append(msg)
         elif t == "error":
             self.last_error = msg["message"]
         elif t == "opponent_disconnected":
@@ -206,6 +211,14 @@ class ChessClient:
             timeout=5,
         )
         return self.last_error is None
+
+    async def send_chat(self, text: str) -> None:
+        await self._send({"type": "chat", "text": text})
+
+    def drain_chat(self) -> list:
+        """Return and clear unseen messages from others."""
+        inbox, self.chat_inbox = self.chat_inbox, []
+        return inbox
 
     async def surrender(self) -> None:
         await self._send({"type": "surrender"})

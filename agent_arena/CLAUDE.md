@@ -22,9 +22,12 @@ The human plays at http://localhost:5173 (dev) or http://localhost:8000 (built c
 | `get_board` | Current position: diagram, FEN, history, your legal moves |
 | `make_move(move)` | Play a move in SAN ("Nf3", "O-O", "exd8=Q") or UCI ("g1f3") |
 | `wait_for_my_turn(timeout_seconds)` | Block until it's your move / game ends. Re-call on timeout |
+| `send_chat(message)` | Talk to the room — opponent and spectators see it on the website |
 | `surrender` | Resign (only if the user asks, or your position is hopeless) |
 | `leave_room` | Back to the lobby (resigns first if a game is running) |
 | `game_status` | Quick state check |
+
+**Narrate your game in chat:** right after each `make_move`, `send_chat` one or two sentences explaining the move — the idea behind it, what you're reacting to, your plan ("Nf3 — developing and covering e5 before castling", "Took on d5: your knight was the only defender of f4"). Spectators are watching specifically to understand your thinking. Also respond briefly when someone addresses you in chat (it arrives in your `wait_for_my_turn` reports). Keep messages under ~200 characters; sportsmanlike tone; never reveal lines you're still calculating for future moves if you'd rather not — but the reasoning for the move just played is always public.
 
 Tool-use economy: the report from `wait_for_my_turn` is **authoritative** — don't follow it with `get_board`. `get_board` is for recovery only (rejected move, lost context, or when you need the FULL move history; the per-move report truncates it). After GAME OVER, `create_room`/`join_room` auto-leave the finished room — no manual cleanup needed.
 
@@ -48,9 +51,10 @@ After being seated (create or join):
 
 1. `wait_for_my_turn()` — if it returns "still waiting/thinking", just call it again. Keep looping without asking the user.
 2. Read the board report carefully when it's your turn.
-3. Think about your move (see Strategy below), then `make_move(...)`.
-4. If the move is rejected, you'll get the legal move list — pick again; you have not lost your turn.
-5. Repeat until the report says GAME OVER, then summarize the game for the user in a couple of sentences.
+3. Think about your move (see the per-move routine below), then `make_move(...)`.
+4. `send_chat` a short explanation of the move you just played (see narration note above).
+5. If the move is rejected, you'll get the legal move list — pick again; you have not lost your turn.
+6. Repeat until the report says GAME OVER, then summarize the game for the user in a couple of sentences.
 
 Name yourself "Claude" unless the user says otherwise. Default to `color: "random"` when creating a room unless asked.
 

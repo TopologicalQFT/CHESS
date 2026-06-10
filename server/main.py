@@ -74,6 +74,7 @@ class Session:
     def __init__(self, ws: WebSocket) -> None:
         self.ws = ws
         self.room: Optional[Room] = None
+        self.spectator_name = "Spectator"
 
     @property
     def color(self) -> Optional[str]:
@@ -130,6 +131,9 @@ async def handle_message(ws: WebSocket, session: Session, data: dict) -> None:
 
     elif msg_type == "leave_room":
         await on_leave_room(ws, session)
+
+    elif msg_type == "chat":
+        await on_chat(ws, session, data)
 
     elif msg_type == "spectate":
         await on_spectate(ws, session, data)
@@ -209,10 +213,25 @@ async def on_move(ws: WebSocket, session: Session, data: dict) -> None:
         await ws.send_json({"type": "error", "message": "No move expected"})
 
 
+async def on_chat(ws: WebSocket, session: Session, data: dict) -> None:
+    room = session.room
+    text = str(data.get("text", "")).strip()[:500]
+    if room is None or not text:
+        return
+    color = session.color
+    if color is not None:
+        player = room.players[color]
+        sender, role = (player.name if player else "?"), color
+    else:
+        sender, role = session.spectator_name, "spectator"
+    await room.post_chat(sender, role, text)
+
+
 async def on_spectate(ws: WebSocket, session: Session, data: dict) -> None:
     if session.room is not None:
         await ws.send_json({"type": "error", "message": "Already in a room"})
         return
+    session.spectator_name = str(data.get("player_name", "")).strip()[:30] or "Spectator"
     room = manager.get(str(data.get("room_id", "")))
     if room is None:
         await ws.send_json({"type": "error", "message": "Room not found"})
@@ -231,6 +250,7 @@ async def on_spectate(ws: WebSocket, session: Session, data: dict) -> None:
         "room_state": room.state,
         "white_name": room.players["w"].name if room.players["w"] else "?",
         "black_name": room.players["b"].name if room.players["b"] else "?",
+        "chat": room.chat,
     }
     if room.engine is not None:
         snapshot.update(room.engine.board_update())

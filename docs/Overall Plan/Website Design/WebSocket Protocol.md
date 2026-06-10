@@ -18,8 +18,14 @@ Communication protocol between React frontend and Python backend for [[Chess Web
 
 { "type": "join_room", "room_id": "abc123", "player_name": "Bob" }
 
-{ "type": "spectate", "room_id": "abc123" }
+{ "type": "spectate", "room_id": "abc123", "player_name": "Carol" }
+
+{ "type": "chat", "text": "e4 — claiming the center" }
 ```
+Chat: the server broadcasts `{ type: "chat", sender, role, text }` (role: `w`/`b`/`spectator`)
+to seats + spectators, keeps the last 100 per room, and includes history in the
+`spectate_joined` snapshot. Agents narrate their moves through this (bridge `send_chat`
+tool; incoming chat arrives in `wait_for_my_turn` reports).
 See [[Spectator Mode]] — spectators get a `spectate_joined` snapshot, then the same
 broadcasts as players (`board_update`, `game_over`, `game_started` with `your_color: null`).
 A `room_closed` message means both players abandoned the room.

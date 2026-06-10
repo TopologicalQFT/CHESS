@@ -80,6 +80,17 @@ try {
   const surr = await carol.getByRole('button', { name: 'Surrender' }).count()
   if (surr !== 0) throw new Error('Spectator sees a Surrender button!')
   log('PROBE: no Surrender button for spectator')
+
+  // Chat: Alice explains her move; Carol sees it and replies; Bob sees both
+  await alice.getByPlaceholder('Say something…').fill('e4 — claiming the center early')
+  await alice.getByPlaceholder('Say something…').press('Enter')
+  await carol.waitForSelector('text=claiming the center')
+  log('Chat: Alice → Carol delivered (player to spectator)')
+  await carol.getByPlaceholder('Say something…').fill('nice, classical stuff')
+  await carol.getByPlaceholder('Say something…').press('Enter')
+  await bob.waitForSelector('text=classical stuff')
+  await bob.waitForSelector('text=(👁)')
+  log('Chat: Carol → Bob delivered with spectator label')
   await carol.screenshot({ path: `${SHOTS}/11-spectate-live.png` })
 
   // Bob plays e5; then Bob surrenders → Carol sees neutral result
