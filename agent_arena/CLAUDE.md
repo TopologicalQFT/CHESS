@@ -37,11 +37,9 @@ Your own analysis equipment — board FACTS, never judgment. Every tool takes th
 
 | Tool | Answers | Call it when |
 |------|---------|--------------|
-| `preview_move(fen, move)` | After this move: which of MY pieces hang? What checks/captures does the opponent get? | **Before committing any capture, pawn push, or "trade"** — this is mandatory for captures |
 | `inspect_square(fen, square)` | Who attacks/defends this square, by piece | Considering a capture or landing square — "is it actually defended?" |
 | `hanging_report(fen)` | The COMPLETE attacked/undefended picture, both sides, with counts | **Once per move, Step 1** — replaces manual attacked/undefended bookkeeping |
 | `list_loose_pieces(fen)` | Hanging pieces only (subset of hanging_report) | Quick recheck inside a calculation |
-| `opponent_replies(fen)` | Their checks & captures if you passed | "What is their threat?" — step 1 of the routine |
 | `pinned_pieces(fen)` | KING pins only (the rules-level fact: moving is illegal). Relative pins are your judgment, not a tool output | Before trusting any defender near the king's lines |
 | `imagine_start(fen)` → `imagine_move([...])` → `imagine_undo(n)` / `imagine_show()` | **Your imagination board** — walk a line forward (both sides' moves), every move validated, danger facts at each stop; undo to branch | ANY multi-move calculation. Start from the current report's FEN each turn |
 
@@ -88,7 +86,7 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 ### Blitz Protocol (clock ≤ 10 minutes) — overrides the normal policies
 1. **Chat budget: 3 messages per game** (greeting, at most one mid-game remark, post-game handshake). No per-move narration — every `send_chat` is a round-trip on your clock.
-2. **Toolkit budget:** book moves, single-option recaptures, and forced replies get ZERO calls. One `preview_move` before a non-forced capture or pawn push. That's it.
+2. **Toolkit budget:** book moves, single-option recaptures, and forced replies get ZERO calls beyond Step 1's `hanging_report`. One quick imagination-board check (`imagine_start` + `imagine_move([move])`) before a non-forced capture or pawn push. That's it.
 3. **No combinations.** Multi-move forced lines need every move verified and there's no time. The solid move beats the brilliant one, every time.
 4. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
 5. **Don't create sharpness you can't afford.** Game 5 was lost by choosing the sharp knight adventure over the simple central move with an even clock — the complications then cost 90 seconds across four moves. In blitz, prefer the move that makes your NEXT several moves obvious.
@@ -150,7 +148,7 @@ You receive the opponent's move and the modified board. Then:
 1. **The previous role of the moving piece** (`piece-roles.md`) — and the roles of every piece your line RELIES on. A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4").
 2. **Pawn move? Pawns can't go back — the move is PERMANENT.** Does it hand them an outpost? Weaken squares forever? Pawn moves require long-term context thinking, not tempo thinking.
 3. **How will the opponent respond?** Your answer becomes a `scenarios.md` entry.
-Plus, with the toolkit: `preview_move` mandatory for captures/pushes/trades; multi-move lines walked on the imagination board (`imagine_start` → `imagine_move`) — a line you haven't walked is a guess, not a calculation. Count both directions (your attackers, then THEIR defenders — you're measurably worse at the second; `inspect_square` settles it). The move must be in the legal list.
+Plus, with the toolkit: **every capture, pawn push, "trade", or multi-move line gets walked on the imagination board** (`imagine_start` → `imagine_move`) — even one ply; its report shows what hangs after and their forcing replies. A line you haven't walked is a guess, not a calculation. Count both directions (your attackers, then THEIR defenders — you're measurably worse at the second; `inspect_square` settles it). The move must be in the legal list.
 
 Then update the changed notebook files (now, or on their clock in timed games), and play.
 

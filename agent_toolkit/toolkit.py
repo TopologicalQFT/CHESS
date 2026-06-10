@@ -77,47 +77,6 @@ def _loose_pieces(board: chess.Board, color: chess.Color) -> List[str]:
 
 # ── Tool implementations (plain functions, MCP wraps them) ──────────
 
-def preview_move(fen: str, move: str) -> str:
-    board = _board(fen)
-    parsed = _parse_move(board, move)
-    if parsed is None:
-        return f"'{move}' is not legal in this position."
-    san = board.san(parsed)
-    mover_color = board.turn
-    board.push(parsed)
-
-    lines = [f"After {san}:"]
-    rows = str(board).split("\n")
-    for i, row in enumerate(rows):
-        lines.append(f"  {8 - i} {row}")
-    lines.append("    a b c d e f g h")
-    lines.append(f"FEN: {board.fen()}")
-
-    loose = _loose_pieces(board, mover_color)
-    if loose:
-        lines.append("YOUR pieces now in danger:")
-        for finding in loose:
-            lines.append(f"  - {finding}")
-    else:
-        lines.append("None of your pieces are hanging after this move.")
-
-    checks = []
-    captures = []
-    for reply in board.legal_moves:
-        reply_san = board.san(reply)
-        if board.gives_check(reply):
-            checks.append(reply_san)
-        if board.is_capture(reply):
-            captures.append(reply_san)
-    lines.append(f"Opponent's checks in reply: {', '.join(checks) if checks else '(none)'}")
-    lines.append(f"Opponent's captures in reply: {', '.join(captures) if captures else '(none)'}")
-    if board.is_checkmate():
-        lines.append("This move delivers CHECKMATE.")
-    elif board.is_stalemate():
-        lines.append("⚠ This move delivers STALEMATE — the game is drawn!")
-    return "\n".join(lines)
-
-
 def inspect_square(fen: str, square_name: str) -> str:
     board = _board(fen)
     try:
@@ -187,27 +146,6 @@ def list_loose_pieces(fen: str) -> str:
         else:
             lines.append("  (none)")
     return "\n".join(lines)
-
-
-def opponent_replies(fen: str) -> str:
-    board = _board(fen)
-    if board.is_check():
-        return "You are IN CHECK — you must address the check; a 'pass' is impossible."
-    board.push(chess.Move.null())  # pretend you passed
-    checks = []
-    captures = []
-    for reply in board.legal_moves:
-        san = board.san(reply)
-        if board.gives_check(reply):
-            checks.append(san)
-        if board.is_capture(reply):
-            captures.append(san)
-    return "\n".join([
-        "If you did NOTHING this move, the opponent could play:",
-        f"Checks: {', '.join(checks) if checks else '(none)'}",
-        f"Captures: {', '.join(captures) if captures else '(none)'}",
-        "(Any capture of an undefended piece here is a live threat you must address.)",
-    ])
 
 
 # ── Imagination board: a stateful virtual board for line exploration ──

@@ -13,19 +13,6 @@ mcp = FastMCP("chess-toolkit")
 
 
 @mcp.tool()
-async def preview_move(fen: str, move: str) -> str:
-    """Dry-run a candidate move: resulting position, which of YOUR pieces end up
-    attacked-and-undefended, and the opponent's checks/captures in reply.
-    Use before committing any capture, pawn push, or 'trade'.
-
-    Args:
-        fen: The current position (from the board report).
-        move: Candidate move in SAN ('Nf3') or UCI ('g1f3').
-    """
-    return toolkit.preview_move(fen, move)
-
-
-@mcp.tool()
 async def inspect_square(fen: str, square: str) -> str:
     """Who attacks and defends a square, by piece. The answer to 'is that
     capture target actually defended?' and 'can I safely land here?'.
@@ -60,17 +47,6 @@ async def list_loose_pieces(fen: str) -> str:
         fen: The current position.
     """
     return toolkit.list_loose_pieces(fen)
-
-
-@mcp.tool()
-async def opponent_replies(fen: str) -> str:
-    """Every check and capture the opponent could play if you passed.
-    The concrete answer to 'what is their threat?'.
-
-    Args:
-        fen: The current position (your turn).
-    """
-    return toolkit.opponent_replies(fen)
 
 
 @mcp.tool()

@@ -29,10 +29,8 @@ Toolkit tools take the **FEN as a parameter** — the toolkit has no connection 
 ### Tier 1 (built)
 | Tool | Returns | Targets blunder mode |
 |------|---------|---------------------|
-| `preview_move(fen, move)` | Resulting position; YOUR pieces left attacked-and-undefended; opponent's checks & captures in reply | #8 self-opened lines, #2 miscounted exchange |
 | `inspect_square(fen, square)` | Occupant; attackers and defenders by color, listed by piece | #9 phantom trade, the "(defended)?" question |
 | `list_loose_pieces(fen)` | Both sides' pieces that are attacked with no defenders, or attacked by a cheaper piece | #4 forgotten hanging piece |
-| `opponent_replies(fen)` | If you passed: every check and capture the opponent could play | #3 missing their threat |
 | `pinned_pieces(fen)` | Absolutely pinned pieces, both colors, with the pinning piece | #1 moving a pinned piece |
 | `imagine_start` / `imagine_move` / `imagine_undo` / `imagine_show` | **The imagination board** (user idea): a stateful virtual board seeded from any FEN — walk lines forward with per-move validation and danger facts at each stop, undo to branch | #12 combinations built on illegal moves; replaces error-prone prose calculation |
 
@@ -58,3 +56,8 @@ Whether tool access compensates for weaker models becomes a measurable question.
 ## Origin
 
 Every Tier 1 tool maps to a blunder the agents actually committed and documented in `agent_arena/suggestion/` (queen lost to a self-opened e-file; "trades" without a recapturing piece; repeated queen-grab bait). The toolkit is the granted form of their `(defended)` annotation request — granted as agent equipment, rejected as interaction-side help, per the principle above.
+
+## Removed tools
+
+- `preview_move` and `opponent_replies` (removed 2026-06-11, user decision): preview_move was fully subsumed by the imagination board (`imagine_start` + `imagine_move([move])`); opponent_replies' name misled (it answered "what if I pass", not "replies to my move") and quiet threats were invisible to it. Fewer tools = less per-move decision overhead.
+- `pinned_pieces` reports KING pins only (same date): relative pins are tactical suggestions, not rules facts — that judgment belongs to the agent.

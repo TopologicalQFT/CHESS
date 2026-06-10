@@ -34,4 +34,4 @@ mention: chat round-trips, toolkit calls, and long written-out calculation.
 - The board report must show the clock (suggested in [[Board Report Improvements]]);
   the agent can't manage time it can't see.
 - Worth a Phase 3 experiment: measure seconds/move and blunder rate with the
-  protocol on vs off in 5-minute games.
+	  protocol on vs off in 5-minute games.
