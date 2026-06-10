@@ -57,37 +57,47 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 4. **Don't create sharpness you can't afford.** In blitz, prefer the move that makes your NEXT several moves obvious.
 5. **HARD GATES — these are token budgets, not vibes** (you can't feel seconds; your reasoning length IS your clock). The move loop's steps NEVER skip — they compress to clauses:
    - **Under 3:00:** the whole loop in ~5 sentences, one clause per step.
-   - **Under 2:00:** one clause per step, ONE candidate (recapture / answer the threat / develop toward GOAL). **A sharp position is NOT an exception.** A lost-on-time sharp position scores the same zero.
-   - **Under 1:00:** OBSERVE = one glance (in check? anything hanging?); GOAL carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
-   - The GOAL/THEIRS/PREP lines are written at EVERY gate (~20 tokens; they're what wins blitz).
+   - **Under 2:00:** one clause per step, ONE candidate (recapture / answer the threat / develop toward your strategy). **A sharp position is NOT an exception.** A lost-on-time sharp position scores the same zero.
+   - **Under 1:00:** OBSERVE = one glance (in check? anything hanging?); your strategy carries; play the first legal, not-hanging move that fits. Still the loop — at minimum depth.
+   - Step 1 (classify, roles, attacked/undefended) runs at EVERY gate, and `scenarios.md` keeps being extended on their clock — scenario hits are what win blitz.
 
-## The game notebook: your full memory of this game
+## The game notebook (Protocal.md — the authoritative spec is in the repo root)
 
-Three summary lines are not enough to hold a game in your head. Each game gets a **notebook file**: create `game_notes/<room_id>.md` when the game starts (copy `game_notes/TEMPLATE.md`) and maintain it for the whole game: **My plan** (long-term strategy), **Their plan** (evidence-based), **My weaknesses / Their weaknesses**, **Piece roles** (each piece's current jobs — update when pieces move; this map is where "a piece can't do two jobs" gets checked), **PREP**, **Move notes**.
+**When a game starts**: copy `game_notes/TEMPLATE/` to `game_notes/<room_id>/` and maintain its md files for the whole game: `context.md` (pawn structure, asymmetries, who is winning), `weaknesses.md` (mine & theirs — back-rank, overloaded pieces), `assets.md` (strengths — fianchetto bishop, open-file rook, outpost knight), `strategy.md` (MY long-term plan), `opponent-wants.md`, `piece-roles.md` (overloads marked), `undefended.md` (**even pieces not attacked right now** — they can be targeted), `attacked.md`, `tactic-ideas.md` (**including currently-impossible ideas** + what's missing for each), `scenarios.md` (short lines: "if X → Y (verified)"), `moves.md`.
 
-**When to update:** after your move in untimed games; in timed games, **on the opponent's clock** — when `wait_for_my_turn` times out, update the notebook and extend PREP instead of idling. Your own turn stays fast because the thinking is already written down.
+In timed games, do heavy updates **on the opponent's clock** (`wait_for_my_turn` timeouts) — your own turns stay fast because the thinking is already written down.
 
-**Step 0 of every turn — consult the notebook (and your last GOAL/THEIRS/PREP lines):**
-- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. Only preps marked **(verified)** qualify — verified means you simulated the projected position carefully when preparing (piece geometry included). Unverified preps say "(check first)".
-- **Quiet move, plan still applies** → run the loop at low depth: does their quiet move change "Their plan"? Beware: a quiet piece re-route can BE the plan — that's what the Their-plan section watches for.
-- **Anything surprising** → preps are void; run the loop at full depth and rewrite the affected notebook sections.
+## Every move: the 3-step protocol (blitz or not — depth scales, steps never skip; all in your head)
 
-Still end every turn's reasoning with the three quick lines (GOAL / THEIRS / PREP) — the turn's delta; the notebook is the full picture. **Blitz suppresses chat — never the notebook, never the lines.**
+You receive the opponent's move and the modified board. Then:
 
-## The move loop — EVERY move, blitz or not. Depth scales; steps NEVER skip. (All in your head.)
+### Step 1 — MANDATORY, every move, your own eyes
+- **Classify against the context**: is their move somewhat EXPECTED (within `context.md` / `opponent-wants.md` / `scenarios.md`) — or something NEW?
+- **Update `piece-roles.md`** for the moved piece (re-mark overloads).
+- **Update `undefended.md` and `attacked.md`** — yours AND theirs: attacker/defender counts, checks, mate threats. Never skipped, never outsourced.
 
-0. **PREP check** (see Continuity) — on a hit, play it; the loop already ran at prep time.
-1. **OBSERVE the context change.** Their move: what do they **WANT** (the plan, not just the threat)? What is newly attacked? What did it STOP defending? What weakness emerged — theirs AND yours? Update the notebook's "Their plan" if the evidence moved.
-2. **WHAT'S HANGING — yours, then theirs. Your own scan, every move.** The short-term, react-now information: which of your pieces are attacked (count attackers vs defenders), any check or mate threat against you, which of THEIR pieces are loose or underdefended. Never skipped — your eyes on the board, feeding both defense (react to what burns) and offense (their loose piece is a candidate target).
-3. **CANDIDATES from goals.** Restate your GOAL against THEIRS (from the notebook). Candidates (2–3 normally; 1 under blitz gates) must **serve your plan, answer theirs, or exploit/fix something from the hanging scan** — a move doing none needs a concrete tactical justification. "Looks active" is not a justification.
-4. **COMMIT with role-awareness.** For the chosen move:
-   - **What job was the moving piece doing?** Check the notebook's piece-role map. And what jobs do the pieces your line RELIES ON (defenders, blockers) have? A piece can't do two jobs.
-   - **What is their best reply?** Your answer becomes the PREP line.
-   - **Count both directions:** your attackers, then THEIR defenders — you are measurably worse at the second, so do it deliberately.
-   - Picture the position AFTER your move: lines opened, what of yours stands on them, "trades" need a named recapturer. Multi-move lines: verify EVERY move on the imagined position (knight moves: (file-diff, rank-diff) must be (1,2) or (2,1)).
-   - The move must appear in the legal moves list.
+### Step 2 — branch on the classification
+**(a) Under context, response straightforward** → respond within the plan. A verified `scenarios.md` hit (no surprises, move legal) plays in seconds.
 
-Then write GOAL / THEIRS / PREP, update the notebook (now, or on their clock in timed games — moved pieces get new roles), and play.
+**(b) Under context, but the response is NOT straightforward** →
+- Read `tactic-ideas.md`: add new ideas, prune outdated ones, check whether their move just made one **executable**
+- Consider giving a role to a **nothing-doing piece** (`piece-roles.md` shows the idle ones)
+- Consider simple long-term strategic moves (from `strategy.md`)
+- For each candidate, guess how they respond; rule out failures; decide.
+
+**(c) NOT under context** →
+- Examine **what they want** → update `opponent-wants.md`
+- Update `context.md` and `weaknesses.md` / `assets.md`
+- Update `strategy.md` if the position changed character
+- Then generate candidates as in (b).
+
+### Step 3 — checks on the chosen move, before playing
+1. **The previous role of the moving piece** (`piece-roles.md`) — and of every piece your line RELIES on. A piece can't do two jobs.
+2. **Pawn move? Pawns can't go back — the move is PERMANENT.** Does it hand them an outpost? Weaken squares forever? Pawn moves need long-term context thinking, not tempo thinking.
+3. **How will the opponent respond?** Your answer becomes a `scenarios.md` entry.
+Plus: picture the position AFTER your move (lines opened, what stands on them; "trades" need a named recapturer; multi-move lines verified move-by-move — knight moves: (file-diff, rank-diff) must be (1,2) or (2,1)); count both directions (your attackers, then THEIR defenders — you're measurably worse at the second); the move must be in the legal list.
+
+Then update the changed notebook files (now, or on their clock in timed games), and play.
 
 General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns, watch for stalemate.
 
