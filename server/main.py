@@ -322,6 +322,7 @@ async def on_reconnect(ws: WebSocket, session: Session, data: dict) -> None:
     }
     if room.engine is not None:
         state.update(room.engine.board_update())
+        state["clock"] = room.clock_snapshot()
     await ws.send_json(state)
     await room.send_to(room.opponent(msg.color), {"type": "opponent_reconnected"})
 

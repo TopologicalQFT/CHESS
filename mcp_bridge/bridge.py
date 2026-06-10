@@ -67,18 +67,34 @@ class ChessClient:
         self.result = None
         self.last_error = None
 
+    async def _reconnect(self) -> None:
+        """Fresh socket; then try to reclaim a live seat instead of
+        discarding it (a mid-game drop must not forfeit the game)."""
+        had_seat = self.room_id is not None and self.my_color is not None
+        await self.connect()
+        if had_seat:
+            await self.ws.send(json.dumps({
+                "type": "reconnect", "room_id": self.room_id, "color": self.my_color,
+            }))
+            # game_restored re-seats us; reconnect_failed resets room state
+            await self._wait_for(
+                lambda: self.phase in ("playing", "finished") or self.room_id is None,
+                timeout=5,
+            )
+            if self.phase == "lobby" and self.room_id is not None:
+                self._reset_room_state()  # no verdict from server — assume seat lost
+        else:
+            self._reset_room_state()
+
     async def _send(self, payload: dict) -> None:
         if self.ws is None:
-            # Reconnect: the old server session (and any seat) is gone
-            self._reset_room_state()
-            await self.connect()
+            await self._reconnect()
         try:
             await self.ws.send(json.dumps(payload))
         except websockets.ConnectionClosed:
             # Socket died since the last call — one clean reconnect + retry
             self.ws = None
-            self._reset_room_state()
-            await self.connect()
+            await self._reconnect()
             await self.ws.send(json.dumps(payload))
 
     async def _listen(self) -> None:
@@ -130,6 +146,22 @@ class ChessClient:
                 "pgn": msg.get("pgn", ""),
             }
             self.phase = "finished"
+        elif t == "game_restored":
+            # Seat reclaimed after a mid-game reconnect
+            self.my_color = msg.get("your_color", self.my_color)
+            self.white_name = msg.get("white_name", self.white_name)
+            self.black_name = msg.get("black_name", self.black_name)
+            if "fen" in msg:
+                self.fen = msg["fen"]
+                self.turn = msg.get("turn", "w")
+                self.is_check = msg.get("is_check", False)
+                self.pgn = msg.get("pgn", "")
+                self.last_san = msg.get("move_san")
+                self.clock = msg.get("clock")
+            self.phase = msg.get("room_state", "playing")
+        elif t == "reconnect_failed":
+            self._reset_room_state()
+            self.phase = "lobby" if self.ws is not None else "disconnected"
         elif t == "chat":
             # Keep only others' messages (our own echo back is just confirmation)
             if msg.get("role") != self.my_color:
@@ -234,7 +266,8 @@ class ChessClient:
     async def wait_for_my_turn(self, timeout: float) -> str:
         """Block until it's our move, the game ends, or timeout.
 
-        Returns: 'your_turn' | 'game_over' | 'timeout' | 'waiting_for_opponent'
+        Returns: 'your_turn' | 'game_over' | 'timeout' |
+                 'waiting_for_opponent' | 'disconnected'
         """
         def ready():
             if self.phase == "finished":
@@ -243,6 +276,17 @@ class ChessClient:
                 return "your_turn"
             return None
 
+        async def resurrect() -> bool:
+            """Socket died mid-wait: reconnect and reclaim the seat."""
+            try:
+                self.ws = None
+                await self._reconnect()
+                return self.phase in ("playing", "finished", "waiting")
+            except Exception:
+                return False
+
+        if self.phase == "disconnected" and not await resurrect():
+            return "disconnected"
         state = ready()
         if state:
             return state
@@ -252,6 +296,8 @@ class ChessClient:
             if remaining <= 0:
                 return "timeout" if self.phase == "playing" else "waiting_for_opponent"
             await self._wait_change(remaining)
+            if self.phase == "disconnected" and not await resurrect():
+                return "disconnected"
             state = ready()
             if state:
                 return state

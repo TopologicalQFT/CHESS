@@ -90,19 +90,46 @@ async def main():
             await human.close()
             await human2.close()
 
-    # ── Regression 2: dead socket must self-heal on next call ──
-    # (bridge-level: same code path the MCP tools use)
+    # ── Regression 2 (bug_report/mid-game-disconnect-loses-seat.md):
+    # a socket drop DURING a live game must reclaim the seat, not forfeit ──
+    agent = ChessClient()
+    opp = ChessClient()
+    await agent.connect()
+    await opp.connect()
+    await agent.create_room("Agent", "w")
+    room_id = agent.room_id
+    await opp.join_room(room_id, "Opp")
+    assert await agent.wait_for_my_turn(5) == "your_turn"
+    assert await agent.make_move(agent.parse_move("e4"))
+
+    # Mid-game drop while it's the opponent's turn
+    await agent.ws.close()
+    await asyncio.sleep(0.2)
+    assert agent.phase == "disconnected"
+
+    # wait_for_my_turn must resurrect the connection AND the seat
+    await opp.wait_for_my_turn(5)
+    await opp.make_move(opp.parse_move("e7e5"))
+    state = await agent.wait_for_my_turn(10)
+    assert state == "your_turn", state
+    assert agent.room_id == room_id          # same room
+    assert agent.my_color == "w"             # same seat
+    assert "e5" in agent.pgn                  # opponent's move arrived
+
+    # The reclaimed seat actually works
+    assert await agent.make_move(agent.parse_move("Nf3")), agent.last_error
+    await agent.close()
+    await opp.close()
+
+    # ── Regression 3: dead socket with NO live game resets cleanly ──
     probe = ChessClient()
     await probe.connect()
-    await probe.create_room("Probe", "w")
-    assert probe.phase == "waiting"
-    await probe.ws.close()           # simulate server restart / network drop
-    await asyncio.sleep(0.2)         # let the listen task notice
-    assert probe.phase == "disconnected"
+    rooms = await probe.get_rooms()
+    await probe.ws.close()
+    await asyncio.sleep(0.2)
     rooms = await probe.get_rooms()  # must reconnect, not raise
     assert probe.phase == "lobby"
     assert isinstance(rooms, list)
-    assert probe.room_id is None     # stale seat forgotten
     await probe.close()
 
     print("MCP E2E TEST PASSED")

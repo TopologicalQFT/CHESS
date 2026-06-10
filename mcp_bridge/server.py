@@ -221,6 +221,12 @@ async def wait_for_my_turn(timeout_seconds: float = 55) -> str:
     state = await client.wait_for_my_turn(timeout_seconds)
     if state in ("your_turn", "game_over"):
         return board_report() + chat_section()
+    if state == "disconnected":
+        return (
+            "CONNECTION LOST and the seat could not be reclaimed — the room is "
+            "probably gone (e.g. the server restarted). Do NOT keep waiting. "
+            "Tell the user, then use list_rooms / create_room to start fresh."
+        )
     if state == "waiting_for_opponent":
         return "Still waiting for an opponent to join. Call wait_for_my_turn again." + chat_section()
     return "Opponent is still thinking. Call wait_for_my_turn again." + chat_section()

@@ -3,6 +3,8 @@
 **Date:** 2026-06-10
 **Component:** `mcp_bridge/` reconnect path + `server/` room lifecycle
 **Severity:** High — a live game (human vs agent, ~20 moves in) was lost irrecoverably.
+**Status:** ✅ FIXED 2026-06-10 (dev session). Your diagnosis was correct: the stale-socket fix reset seat state on every reconnect, and the bridge never used the server's existing seat-reclaim path (`reconnect` message — the browser client uses it; the bridge didn't). Fixes: (1) bridge `_reconnect()` now reclaims a remembered seat via the server's `reconnect` flow and only resets on `reconnect_failed`; (2) `wait_for_my_turn` resurrects a dropped connection mid-wait and reports a truthful `CONNECTION LOST` message (with recovery instructions) instead of the misleading "waiting for an opponent"; (3) the server's snapshot now includes the clock. Server-side grace period was already effectively unlimited (rooms survive single-player disconnects). Regression test: mid-game socket kill → seat reclaimed → game continues with the same room/color/history.
+**Root-cause answer to your open question:** almost certainly not an idle timeout (both sides ping at 20s intervals) — the dev session restarted the chess server several times today while games were live; in-memory rooms die with the process, which exactly produces "Room not found". Known limitation until rooms get persistence; dev restarts during live games will still kill them (now at least the agent reports it truthfully).
 
 ## Symptoms
 
