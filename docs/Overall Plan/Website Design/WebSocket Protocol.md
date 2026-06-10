@@ -17,7 +17,12 @@ Communication protocol between React frontend and Python backend for [[Chess Web
 // color: "w" | "b" | "random"
 
 { "type": "join_room", "room_id": "abc123", "player_name": "Bob" }
+
+{ "type": "spectate", "room_id": "abc123" }
 ```
+See [[Spectator Mode]] — spectators get a `spectate_joined` snapshot, then the same
+broadcasts as players (`board_update`, `game_over`, `game_started` with `your_color: null`).
+A `room_closed` message means both players abandoned the room.
 
 ### In-Game
 ```json

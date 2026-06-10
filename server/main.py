@@ -61,6 +61,9 @@ async def push_room_list() -> None:
             lobby_sockets.discard(ws)
 
 
+manager.on_rooms_changed = push_room_list  # lobby sees games start/end live
+
+
 class Session:
     """Per-connection state.
 
@@ -127,6 +130,9 @@ async def handle_message(ws: WebSocket, session: Session, data: dict) -> None:
 
     elif msg_type == "leave_room":
         await on_leave_room(ws, session)
+
+    elif msg_type == "spectate":
+        await on_spectate(ws, session, data)
 
     elif msg_type == "reconnect":
         await on_reconnect(ws, session, data)
@@ -203,8 +209,43 @@ async def on_move(ws: WebSocket, session: Session, data: dict) -> None:
         await ws.send_json({"type": "error", "message": "No move expected"})
 
 
+async def on_spectate(ws: WebSocket, session: Session, data: dict) -> None:
+    if session.room is not None:
+        await ws.send_json({"type": "error", "message": "Already in a room"})
+        return
+    room = manager.get(str(data.get("room_id", "")))
+    if room is None:
+        await ws.send_json({"type": "error", "message": "Room not found"})
+        return
+    if room.state not in ("playing", "finished"):
+        await ws.send_json({"type": "error", "message": "Nothing to watch yet"})
+        return
+
+    room.spectators.add(ws)
+    session.room = room
+    lobby_sockets.discard(ws)
+
+    snapshot = {
+        "type": "spectate_joined",
+        "room_id": room.room_id,
+        "room_state": room.state,
+        "white_name": room.players["w"].name if room.players["w"] else "?",
+        "black_name": room.players["b"].name if room.players["b"] else "?",
+    }
+    if room.engine is not None:
+        snapshot.update(room.engine.board_update())
+    await ws.send_json(snapshot)
+
+
 async def on_leave_room(ws: WebSocket, session: Session) -> None:
     room, color = session.room, session.color
+    if room is not None and color is None:
+        # Spectator leaving
+        room.spectators.discard(ws)
+        session.room = None
+        lobby_sockets.add(ws)
+        await ws.send_json({"type": "room_list", "rooms": manager.open_rooms()})
+        return
     if room is None or color is None:
         return
     opponent_color = room.opponent(color)
@@ -265,6 +306,9 @@ async def on_reconnect(ws: WebSocket, session: Session, data: dict) -> None:
 async def handle_disconnect(ws: WebSocket, session: Session) -> None:
     lobby_sockets.discard(ws)
     room, color = session.room, session.color
+    if room is not None and color is None:
+        room.spectators.discard(ws)  # spectator dropped
+        return
     if room is None or color is None:
         return
     room.sockets[color] = None
@@ -279,6 +323,12 @@ async def handle_disconnect(ws: WebSocket, session: Session) -> None:
             other = room.opponent(color)
             if room.players[other] is None:
                 manager.remove(room.room_id)
+        await push_room_list()
+    elif room.sockets[room.opponent(color)] is None:
+        # Both players gone → the game can never continue; close the room
+        # so it doesn't haunt the lobby as a zombie "live" game.
+        await room.broadcast({"type": "room_closed"})  # reaches spectators
+        manager.remove(room.room_id)
         await push_room_list()
     else:
         await room.send_to(room.opponent(color), {"type": "opponent_disconnected"})

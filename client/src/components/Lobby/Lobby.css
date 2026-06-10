@@ -86,5 +86,20 @@
 .room-color { flex: 1; font-size: 13px; }
 .room-list .btn-primary { padding: 7px 18px; font-size: 13px; }
 
+.room-color.live { color: var(--danger); font-weight: 600; }
+
+.btn-watch {
+  padding: 7px 18px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent-hover);
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-watch:hover:not(:disabled) { background: rgba(98, 153, 36, 0.15); }
+.btn-watch:disabled { opacity: 0.45; cursor: default; }
+
 .empty { color: #888; font-size: 14px; }
 .conn-warning { text-align: center; color: var(--danger); font-size: 14px; }

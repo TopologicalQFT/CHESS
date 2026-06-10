@@ -66,14 +66,33 @@ export function LobbyPage() {
           <ul className="room-list">
             {state.rooms.map((room) => (
               <li key={room.room_id}>
-                <span className="room-creator">{room.creator}</span>
-                <span className="room-id">#{room.room_id}</span>
-                <span className="room-color">
-                  plays {room.available_color === 'w' ? 'White' : 'Black'}
-                </span>
-                <button className="btn-primary" disabled={!ready} onClick={() => join(room.room_id)}>
-                  Join
-                </button>
+                {room.state === 'waiting' ? (
+                  <>
+                    <span className="room-creator">{room.creator}</span>
+                    <span className="room-id">#{room.room_id}</span>
+                    <span className="room-color">
+                      plays {room.available_color === 'w' ? 'White' : 'Black'}
+                    </span>
+                    <button className="btn-primary" disabled={!ready} onClick={() => join(room.room_id)}>
+                      Join
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="room-creator">
+                      {room.white_name} vs {room.black_name}
+                    </span>
+                    <span className="room-id">#{room.room_id}</span>
+                    <span className="room-color live">● live</span>
+                    <button
+                      className="btn-watch"
+                      disabled={!connected}
+                      onClick={() => actions.spectate(room.room_id)}
+                    >
+                      Watch
+                    </button>
+                  </>
+                )}
               </li>
             ))}
           </ul>

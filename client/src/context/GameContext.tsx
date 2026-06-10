@@ -9,6 +9,7 @@ interface GameContextValue {
   actions: {
     createRoom: (playerName: string, color: Color | 'random') => void
     joinRoom: (roomId: string, playerName: string) => void
+    spectate: (roomId: string) => void
     move: (from: string, to: string, promotion?: string) => void
     surrender: () => void
     rematch: () => void
@@ -83,6 +84,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const actions: GameContextValue['actions'] = {
     createRoom: (playerName, color) => send({ type: 'create_room', player_name: playerName, color }),
     joinRoom: (roomId, playerName) => send({ type: 'join_room', room_id: roomId, player_name: playerName }),
+    spectate: (roomId) => send({ type: 'spectate', room_id: roomId }),
     move: (from, to, promotion) => send({ type: 'move', from, to, promotion }),
     surrender: () => send({ type: 'surrender' }),
     rematch: () => {

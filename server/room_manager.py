@@ -2,7 +2,7 @@
 import asyncio
 import secrets
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from fastapi import WebSocket
 
@@ -16,10 +16,14 @@ class Room:
         self.state = "waiting"  # waiting | playing | finished
         self.players: Dict[str, Optional[HumanPlayer]] = {"w": None, "b": None}
         self.sockets: Dict[str, Optional[WebSocket]] = {"w": None, "b": None}
+        self.spectators: Set[WebSocket] = set()
         self.engine: Optional[GameEngine] = None
         self.created_at = datetime.now(timezone.utc).isoformat()
         self.game_task: Optional[asyncio.Task] = None
         self.rematch_votes = {"w": False, "b": False}
+        # Awaitable invoked when the room's lobby visibility changes
+        # (start/end of games) — wired to the lobby push in main.py.
+        self.on_state_change = None
 
     # ── Helpers ──────────────────────────────────────────────
 
@@ -62,6 +66,11 @@ class Room:
     async def broadcast(self, payload: dict) -> None:
         await self.send_to("w", payload)
         await self.send_to("b", payload)
+        for ws in list(self.spectators):
+            try:
+                await ws.send_json(payload)
+            except Exception:
+                self.spectators.discard(ws)
 
     # ── Game flow ────────────────────────────────────────────
 
@@ -69,17 +78,28 @@ class Room:
         self.engine = GameEngine()
         self.state = "playing"
         self.rematch_votes = {"w": False, "b": False}
-        for color in ("w", "b"):
-            await self.send_to(color, {
+
+        def started_payload(your_color: Optional[str]) -> dict:
+            return {
                 "type": "game_started",
                 "fen": self.engine.board.fen(),
-                "your_color": color,
+                "your_color": your_color,
                 "white_name": self.players["w"].name,
                 "black_name": self.players["b"].name,
                 "legal_moves": self.engine.legal_moves(),
                 "turn": "w",
-            })
+            }
+
+        for color in ("w", "b"):
+            await self.send_to(color, started_payload(color))
+        for ws in list(self.spectators):
+            try:
+                await ws.send_json(started_payload(None))
+            except Exception:
+                self.spectators.discard(ws)
         self.game_task = asyncio.create_task(self._game_loop())
+        if self.on_state_change:
+            await self.on_state_change()
 
     async def _game_loop(self) -> None:
         """Ask the current player for a move, apply, broadcast, repeat."""
@@ -109,6 +129,8 @@ class Room:
         self.state = "finished"
         payload = {"type": "game_over", "pgn": self.engine.pgn() if self.engine else "", **result}
         await self.broadcast(payload)
+        if self.on_state_change:
+            await self.on_state_change()
 
     async def surrender(self, color: str) -> None:
         if self.state != "playing":
@@ -148,12 +170,14 @@ class Room:
 class RoomManager:
     def __init__(self) -> None:
         self.rooms: Dict[str, Room] = {}
+        self.on_rooms_changed = None  # set by main.py → lobby push
 
     def create_room(self) -> Room:
         room_id = secrets.token_hex(3)  # 6-char id
         while room_id in self.rooms:
             room_id = secrets.token_hex(3)
         room = Room(room_id)
+        room.on_state_change = self.on_rooms_changed
         self.rooms[room_id] = room
         return room
 
@@ -166,13 +190,25 @@ class RoomManager:
             room.shutdown()
 
     def open_rooms(self) -> List[dict]:
-        return [
-            {
-                "room_id": room.room_id,
-                "creator": room.creator_name(),
-                "available_color": room.available_color(),
-                "created_at": room.created_at,
-            }
-            for room in self.rooms.values()
-            if room.state == "waiting" and not room.is_full()
-        ]
+        """Rooms shown in the lobby: joinable (waiting) and watchable (playing)."""
+        entries = []
+        for room in self.rooms.values():
+            if room.state == "waiting" and not room.is_full():
+                entries.append({
+                    "room_id": room.room_id,
+                    "state": "waiting",
+                    "creator": room.creator_name(),
+                    "available_color": room.available_color(),
+                    "created_at": room.created_at,
+                })
+            elif room.state == "playing":
+                entries.append({
+                    "room_id": room.room_id,
+                    "state": "playing",
+                    "creator": room.creator_name(),
+                    "white_name": room.players["w"].name if room.players["w"] else "?",
+                    "black_name": room.players["b"].name if room.players["b"] else "?",
+                    "available_color": None,
+                    "created_at": room.created_at,
+                })
+        return entries

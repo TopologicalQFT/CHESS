@@ -10,6 +10,11 @@ export function GameOverOverlay({ onAnalyze }: { onAnalyze: () => void }) {
       const reason = result.reason?.replace(/_/g, ' ') ?? result.result
       return `Draw — ${reason}`
     }
+    if (state.isSpectator) {
+      const winnerName = result.winner === 'w' ? state.whiteName : state.blackName
+      const how = result.result === 'checkmate' ? 'by checkmate' : 'by resignation'
+      return `${winnerName} wins ${how}`
+    }
     const iWon = result.winner === me
     const how = result.result === 'checkmate' ? 'by checkmate' : 'by resignation'
     return iWon ? `You win ${how}! 🎉` : `You lose ${how}`
@@ -19,16 +24,19 @@ export function GameOverOverlay({ onAnalyze }: { onAnalyze: () => void }) {
     <div className="overlay">
       <div className="overlay-card">
         <h2>{headline}</h2>
-        {state.rematchOffered && !state.rematchRequested && (
+        {state.isSpectator && (
+          <p className="rematch-note">If the players rematch, you'll keep watching.</p>
+        )}
+        {!state.isSpectator && state.rematchOffered && !state.rematchRequested && (
           <p className="rematch-note">Opponent wants a rematch!</p>
         )}
-        {state.rematchRequested ? (
+        {!state.isSpectator && (state.rematchRequested ? (
           <p className="rematch-note">Rematch requested — waiting for opponent…</p>
         ) : (
           <button className="btn-primary" onClick={actions.rematch}>
             {state.rematchOffered ? 'Accept rematch' : 'Rematch'}
           </button>
-        )}
+        ))}
         {result.pgn && (
           <button className="btn-flat" onClick={onAnalyze}>Analyze game 🔍</button>
         )}

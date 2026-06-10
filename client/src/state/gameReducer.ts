@@ -7,6 +7,7 @@ export interface GameState {
   roomId: string | null
   rooms: RoomSummary[]
   myColor: Color | null
+  isSpectator: boolean
   whiteName: string
   blackName: string
 
@@ -33,6 +34,7 @@ export const initialState: GameState = {
   roomId: null,
   rooms: [],
   myColor: null,
+  isSpectator: false,
   whiteName: '',
   blackName: '',
   fen: START_FEN,
@@ -77,6 +79,29 @@ export function gameReducer(state: GameState, action: Action): GameState {
     case 'room_joined':
       // We are the creator; opponent just arrived. game_started follows.
       return state
+
+    case 'spectate_joined': {
+      const spectating: GameState = {
+        ...state,
+        view: msg.room_state === 'finished' ? 'finished' : 'playing',
+        roomId: msg.room_id,
+        myColor: null,
+        isSpectator: true,
+        whiteName: msg.white_name,
+        blackName: msg.black_name,
+        result: null,
+      }
+      if (msg.fen) {
+        spectating.fen = msg.fen
+        spectating.lastMove = msg.last_move ?? null
+        spectating.legalMoves = []
+        spectating.turn = msg.turn ?? 'w'
+        spectating.isCheck = msg.is_check ?? false
+        spectating.pgn = msg.pgn ?? ''
+        spectating.captured = msg.captured ?? { w: [], b: [] }
+      }
+      return spectating
+    }
 
     case 'game_started':
       return {
@@ -150,6 +175,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
       }
       return restored
     }
+
+    case 'room_closed':
+      // Players abandoned the room (e.g. both disconnected) — back to lobby
+      return { ...initialState, rooms: state.rooms, error: 'The players left — room closed.' }
 
     case 'reconnect_failed':
       return { ...initialState, rooms: state.rooms }

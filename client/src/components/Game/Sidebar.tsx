@@ -10,10 +10,15 @@ export function Sidebar() {
   const me = state.myColor ?? 'w'
   const opp = me === 'w' ? 'b' : 'w'
   const names = { w: state.whiteName || 'White', b: state.blackName || 'Black' }
+  const spectator = state.isSpectator
 
   const statusText = (() => {
     if (state.view === 'waiting') return 'Waiting for opponent…'
     if (state.view === 'finished') return 'Game over'
+    if (spectator) {
+      const turnText = state.turn === 'w' ? 'White to move' : 'Black to move'
+      return state.isCheck ? `${turnText} — Check!` : turnText
+    }
     if (!state.opponentConnected) return 'Opponent disconnected…'
     const turnText = state.turn === me ? 'Your turn' : "Opponent's turn"
     return state.isCheck ? `${turnText} — Check!` : turnText
@@ -21,13 +26,17 @@ export function Sidebar() {
 
   return (
     <aside className="sidebar">
+      {spectator && <div className="spectator-badge">👁 Spectating</div>}
       <PlayerRow name={names[opp]} color={opp} captured={state.captured} myRow={false} />
-      <div className={`status ${state.turn === me && state.view === 'playing' ? 'my-turn' : ''}`}>
+      <div className={`status ${!spectator && state.turn === me && state.view === 'playing' ? 'my-turn' : ''}`}>
         {statusText}
       </div>
       <MoveHistory pgn={state.pgn} />
-      <PlayerRow name={names[me]} color={me} captured={state.captured} myRow />
-      {state.view === 'playing' && (
+      <PlayerRow name={names[me]} color={me} captured={state.captured} myRow={!spectator} />
+      {spectator && (
+        <button className="btn-flat" onClick={actions.leaveRoom}>Leave</button>
+      )}
+      {!spectator && state.view === 'playing' && (
         <div className="control-row">
           {confirmSurrender ? (
             <>

@@ -155,6 +155,56 @@ def test_illegal_move_rejected(server):
     asyncio.run(scenario())
 
 
+def test_spectator_flow(server):
+    async def scenario():
+        async with connect(URL) as alice, connect(URL) as bob, connect(URL) as carol:
+            room_id, _, _ = await start_game(alice, bob)
+
+            # Carol (in lobby) gets room_list pushes as the room is created,
+            # joined, and started — wait for the one showing it as playing
+            playing = None
+            for _ in range(10):
+                rooms = (await recv_until(carol, "room_list"))["rooms"]
+                match = [r for r in rooms if r["room_id"] == room_id]
+                if match and match[0]["state"] == "playing":
+                    playing = match[0]
+                    break
+            assert playing is not None, "never saw the room as playing"
+            assert playing["white_name"] == "Alice"
+
+            # Carol spectates: snapshot, then live updates
+            await send(carol, {"type": "spectate", "room_id": room_id})
+            snap = await recv_until(carol, "spectate_joined")
+            assert snap["white_name"] == "Alice" and snap["black_name"] == "Bob"
+            assert snap["fen"].startswith("rnbqkbnr")
+
+            await send(alice, {"type": "move", "from": "e2", "to": "e4"})
+            up = await recv_until(carol, "board_update")
+            assert up["move_san"] == "e4"
+
+            # Spectator cannot act
+            await send(carol, {"type": "move", "from": "e7", "to": "e5"})
+            err = await recv_until(carol, "error")
+            assert err["message"] == "No active game"
+            await send(carol, {"type": "surrender"})  # silently ignored (no seat)
+
+            # Game over reaches the spectator; rematch restarts her view
+            await send(bob, {"type": "surrender"})
+            over = await recv_until(carol, "game_over")
+            assert over["result"] == "resignation"
+            await send(alice, {"type": "rematch"})
+            await send(bob, {"type": "rematch"})
+            restart = await recv_until(carol, "game_started")
+            assert restart["your_color"] is None  # spectator stays colorless
+
+            # Leave back to lobby
+            await send(carol, {"type": "leave_room"})
+            rooms = (await recv_until(carol, "room_list"))["rooms"]
+            assert isinstance(rooms, list)
+
+    asyncio.run(scenario())
+
+
 def test_room_listing_and_full_room(server):
     async def scenario():
         async with connect(URL) as alice, connect(URL) as bob, connect(URL) as carol:
