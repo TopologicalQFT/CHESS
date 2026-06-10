@@ -82,6 +82,7 @@ try {
     throw new Error(`eval bar wrong: ${JSON.stringify(bar)}`)
   }
   log(`eval bar: h=${bar.h}px, bg=${bar.bg.slice(0, 80)}…`)
+  await alice.locator('.eval-bar').screenshot({ path: `${SHOTS}/evalbar.png` })
   const hint = await alice.locator('.hint-blunder').textContent()
   log(`hint shown: ${hint.trim()}`)
   await alice.screenshot({ path: `${SHOTS}/09-analysis.png` })
