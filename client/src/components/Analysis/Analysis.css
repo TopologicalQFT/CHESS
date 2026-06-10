@@ -8,13 +8,38 @@
 .analysis-board-col {
   flex: 1;
   min-width: 320px;
-  max-width: min(70vh, 600px);
+  max-width: min(70vh, 620px);
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.review-board { width: 100%; }
+.board-with-bar {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.review-board { flex: 1; min-width: 0; }
+
+/* Vertical eval bar (background gradient set inline by EvalBar.tsx) */
+.eval-bar {
+  position: relative;
+  width: 26px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.eval-bar-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.eval-bar-label.on-white { color: #333; }
+.eval-bar-label.on-black { color: #ddd; }
 
 .nav-row {
   display: flex;
@@ -39,12 +64,19 @@
 .eg-dot.blunder { fill: #d33; }
 .eg-dot.mistake { fill: #e8a33d; }
 
-/* Side panel */
+/* Side panel — compact: size to content, don't stretch with the board column */
 .analysis-side {
   width: 300px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  align-self: flex-start;
+}
+
+.analysis-side .btn-flat {
+  flex: 0 0 auto; /* Game.css gives .btn-flat flex:1 — would balloon vertically here */
+  align-self: flex-end;
+  padding: 8px 18px;
 }
 
 .summary-grid { display: flex; gap: 10px; }
@@ -78,21 +110,21 @@
 .hint-inaccuracy { border-color: #d6c44a; }
 
 .analysis-moves {
-  flex: 1;
   overflow-y: auto;
   background: var(--bg);
   border: 1px solid var(--panel-border);
   border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 14px;
-  line-height: 2;
-  max-height: 320px;
+  padding: 6px 8px;
+  font-size: 13.5px;
+  line-height: 1.9;
+  max-height: 200px;
 }
 .amove {
-  padding: 2px 5px;
+  display: inline-block;
+  padding: 1px 5px;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 2px;
+  margin-right: 4px;
   white-space: nowrap;
 }
 .amove:hover { background: #2b2926; }

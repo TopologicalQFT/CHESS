@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchAnalysis, type AnalysisResult } from '../../types/analysis'
 import { ReviewBoard } from './ReviewBoard'
 import { EvalGraph } from './EvalGraph'
+import { EvalBar } from './EvalBar'
 import './Analysis.css'
 
 const MARKS: Record<string, string> = { blunder: '??', mistake: '?', inaccuracy: '?!' }
@@ -56,10 +57,15 @@ export function AnalysisView({ pgn, flipped, onClose }: {
     ? { from: current.uci.slice(0, 2), to: current.uci.slice(2, 4) }
     : null
 
+  const evalNow = current ? current.eval_after : 0
+
   return (
     <div className="analysis-view">
       <div className="analysis-board-col">
-        <ReviewBoard fen={data.fens[ply]} lastMove={lastMove} flipped={flipped} />
+        <div className="board-with-bar">
+          <EvalBar evalCp={evalNow} flipped={flipped} />
+          <ReviewBoard fen={data.fens[ply]} lastMove={lastMove} flipped={flipped} />
+        </div>
         <div className="nav-row">
           <button className="btn-flat" onClick={() => setPly(0)} disabled={ply === 0}>⏮</button>
           <button className="btn-flat" onClick={() => setPly(Math.max(0, ply - 1))} disabled={ply === 0}>◀</button>

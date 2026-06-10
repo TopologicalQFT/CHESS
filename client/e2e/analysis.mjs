@@ -72,6 +72,16 @@ try {
   // Click the blunder → board jumps there, hint shows best move
   await alice.locator('.amove.blunder').first().click()
   await alice.waitForSelector('.hint-blunder')
+
+  // Eval bar sanity: White is mating → bar must be ~95% white from the bottom
+  const bar = await alice.locator('.eval-bar').evaluate((el) => ({
+    bg: getComputedStyle(el).backgroundImage,
+    h: el.offsetHeight,
+  }))
+  if (!bar.bg.includes('linear-gradient') || bar.h < 100) {
+    throw new Error(`eval bar wrong: ${JSON.stringify(bar)}`)
+  }
+  log(`eval bar: h=${bar.h}px, bg=${bar.bg.slice(0, 80)}…`)
   const hint = await alice.locator('.hint-blunder').textContent()
   log(`hint shown: ${hint.trim()}`)
   await alice.screenshot({ path: `${SHOTS}/09-analysis.png` })
