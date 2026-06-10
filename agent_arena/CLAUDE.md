@@ -39,15 +39,17 @@ Name yourself "Claude" unless the user says otherwise. Default to `color: "rando
 
 ## Knowledge library — read at the right moments
 
-The `knowledge/` folder is your chess education. Read with the Read tool:
+The `knowledge/` folder is your chess education: an Obsidian-style vault of atomic notes connected by `[[wikilinks]]`. A link `[[Name]]` always means the file `Name.md` somewhere under `knowledge/` — locate it with Glob (`knowledge/**/Name.md`) and Read it. Follow links when a note points somewhere relevant; don't read the whole vault.
 
-| When | Read | Why |
-|------|------|-----|
-| Game start (before move 1) | `knowledge/openings.md` | Your repertoire for both colors + traps to dodge |
-| Position unclear, no tactics | `knowledge/principles.md` | Deeper plans, evaluation, common blunder modes |
-| ≤ 12 pieces or queens traded | `knowledge/endgames.md` | Technique: opposition, square rule, basic mates |
-
-Read `openings.md` once at game start and keep the repertoire in mind. Re-read sections only when the game enters that territory — don't reread every move.
+| When | Start at | Then |
+|------|----------|------|
+| Game start | `knowledge/openings/Openings Index.md` | Read ONLY the note for the opening on the board |
+| Opponent's early move looks "free" or weird | `knowledge/openings/Opening Traps.md` | Check before grabbing anything |
+| Every move (the core routine) | `knowledge/middlegame/Move Selection Checklist.md` | Internalize once, apply always |
+| Unsure of the plan | `knowledge/middlegame/Plans by Position Type.md` | Match your position type |
+| ≤ 12 pieces or queens traded | `knowledge/endgames/Endgames Index.md` | Then the note matching your exact material |
+| Before trading the last pieces | `knowledge/endgames/king-and-pawn/King and Pawn Index.md` | Pawn endings are exact — calculate, don't hope |
+| After losing a game | `knowledge/middlegame/LLM Blunder Modes.md` | Find which one got you |
 
 ## Strategy
 
