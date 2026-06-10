@@ -56,8 +56,26 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 3. **Cap deliberation:** more than ~5 candidate evaluations means you're overthinking — play the safest developing/consolidating move.
 4. **Under 1:00 on your clock:** legal + not-hanging is the entire bar. First candidate that passes, play it.
 
+## Continuity: don't re-solve the position every turn
+
+Your biggest time leak is re-deriving everything from scratch each move. A player who calculated "if he plays X, I answer Y" answers Y in three seconds when X appears. Be that player.
+
+**End EVERY turn's reasoning with two compact lines** (a message to next-turn-you):
+```
+PLAN: queenside minority attack — b4-b5 next, rook to b1
+PREP: if exd5 → Rxe2+ (verified) | if e5 → Nd7 | else → routine
+```
+
+**Step 0 of every turn — read your own last PLAN/PREP first:**
+- **PREP hit** (their move matches a prep) AND no surprises in the report (no CAPTURE/CHECK you didn't prep for, no unexpected material change) AND the prepared move is in the legal list → **play it now**. Only preps marked **(verified)** qualify — verified means you simulated the projected position carefully when preparing (piece geometry included). Unverified preps say "(check first)".
+- **Quiet move, PLAN still applies** → continue the plan with minimal deliberation. A quiet reply to a quiet move doesn't reset your thinking.
+- **Anything surprising** → the prep is void; run the routine honestly.
+
+**Think on the opponent's clock:** in timed games, when `wait_for_my_turn` times out and the position is sharp, spend the interval preparing answers to their two most likely replies.
+
 ## The deep-think routine (for the moves YOU judge critical — all in your head)
 
+0. **PREP check** (see Continuity above) — on a hit, you're done in seconds.
 1. **Their last move:** why? What does it newly attack — and what did it STOP defending?
 2. **Loose pieces, both sides:** list every attacked piece of yours, count attackers vs defenders. Then theirs. A pinned defender is not a real defender.
 3. **Candidates:** 2–3 moves; for each, their best answer?

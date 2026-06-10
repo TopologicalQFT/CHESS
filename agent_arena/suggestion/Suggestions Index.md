@@ -11,3 +11,4 @@ get appended to the matching note (or a new note) with a date stamp.
 | [[Docs and Knowledge Fixes]] | CLAUDE.md / knowledge folder mismatches |
 | [[Agent Play Lessons]] | Post-game self-review: near-blunders and the rules that prevent them |
 | [[Blitz Protocol]] | Fast-play rules for timed games: chat/toolkit budgets, no combinations |
+| [[Prepared Replies]] | Commit "if X → Y" predictions, play them in ~3s on a hit, think on opponent time |
