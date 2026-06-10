@@ -28,6 +28,20 @@ The human plays at http://localhost:5173 (dev) or http://localhost:8000 (built c
 
 Tool-use economy: the report from `wait_for_my_turn` is **authoritative** — don't follow it with `get_board`. `get_board` is for recovery only (rejected move, lost context, or when you need the FULL move history; the per-move report truncates it). After GAME OVER, `create_room`/`join_room` auto-leave the finished room — no manual cleanup needed.
 
+## Your toolkit (MCP server `chess-toolkit`)
+
+Your own analysis equipment — board FACTS, never judgment. Every tool takes the current **FEN** (copy it from the board report). These are part of YOU, not the game: using them well is part of playing well.
+
+| Tool | Answers | Call it when |
+|------|---------|--------------|
+| `preview_move(fen, move)` | After this move: which of MY pieces hang? What checks/captures does the opponent get? | **Before committing any capture, pawn push, or "trade"** — this is mandatory for captures |
+| `inspect_square(fen, square)` | Who attacks/defends this square, by piece | Considering a capture or landing square — "is it actually defended?" |
+| `list_loose_pieces(fen)` | Hanging pieces, both sides | Start of your thinking each move: your urgent problems + their free targets |
+| `opponent_replies(fen)` | Their checks & captures if you passed | "What is their threat?" — step 1 of the routine |
+| `pinned_pieces(fen)` | Absolutely pinned pieces, both colors | Before trusting any defender, and before moving a piece near your king's lines |
+
+Typical move = 1–3 toolkit calls. Don't call all five every move; match the tool to the question your reasoning hits.
+
 ## Game loop
 
 After being seated (create or join):
@@ -60,18 +74,19 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 | Before trading the last pieces | `knowledge/endgames/king-and-pawn/King and Pawn Index.md` | Pawn endings are exact — calculate, don't hope |
 | After losing a game | `knowledge/strategy/LLM Blunder Modes.md` | Find which one got you |
 
-## Strategy
+## The per-move routine (inline — do NOT skip under play pressure)
 
-Before each move, reason briefly and concretely:
+Run ALL five steps every move. Past games show the routine gets skipped exactly when it's needed most.
 
-1. **Why did the opponent make their last move?** What does it attack, defend, or prepare?
-2. **Checks, captures, threats** — yours and theirs. Is anything of yours hanging? Is anything of theirs free?
-3. **Candidate moves** — pick 2–3 from the legal move list, compare them concretely (what does the opponent do next?).
-4. **Sanity check** — after your chosen move, what is the opponent's best reply? Does it lose material or allow mate?
+1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If anything looks threatening: `opponent_replies(fen)`.
+2. **Loose pieces, both sides:** is anything of yours hanging? Anything of theirs free? When in doubt: `list_loose_pieces(fen)`. Remember pins make defenders fake: `pinned_pieces(fen)`.
+3. **Candidates:** pick 2–3 moves from the legal list, compare concretely (what's their best answer to each?).
+4. **Simulate before committing:** `preview_move(fen, move)` for your chosen move — MANDATORY for any capture, pawn push, or "trade". Check its output for: your pieces left hanging (blunder mode 8 — self-opened lines), and whether your "trade" actually has a recapturer (mode 9).
+5. **Legality:** the move must appear in the legal moves list you were given.
 
-General principles: develop pieces before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, look for tactics (forks, pins, skewers) on every move. In the endgame, activate your king and push passed pawns.
+General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions every move. Endgame: activate the king, push passed pawns.
 
-Always verify your intended move is in the legal moves list before playing it.
+Deeper guidance lives in the vault ([[Move Selection Checklist]] expands this routine; strategy notes per situation in the table above).
 
 ## Filing bug reports
 

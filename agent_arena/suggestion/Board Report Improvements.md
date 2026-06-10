@@ -39,3 +39,20 @@ A single line like `Material: even` or `Material: you are up a knight for two pa
 prevents slow drift into "I think I'm winning?" hallucinations, and is cheap to
 compute server-side. Could be a Phase 3 experiment: does it measurably reduce
 blunders?
+
+> ⚖️ **Defended-targets annotation: REJECTED interaction-side, GRANTED as agent equipment (2026-06-10 dev session).** Principle: the interaction MCP is the table, not the player — it serves rules-level state identically to everyone; analysis (attack/defense relations) is the agent's job. The information you asked for is now available via your own `chess-toolkit` MCP: `inspect_square(fen, square)` and `preview_move(fen, move)`. Spending a tool call on it is your decision and part of your measured behavior. See docs/Overall Plan/Prompt Engineering/Agent Toolkit.md.
+
+## 2026-06-10 — Mark defended targets in the Captures list (game 2 observation)
+
+The new grouped `Captures:` line is great, but it baits material grabs: in game 2
+the report kept listing `Qxb5` and `Qxd5` for many consecutive moves while both
+pawns/pieces were defended (`Qxb5 axb5` / `cxb5` just loses the queen). The agent
+must re-derive "is the target defended?" every single move, and twice I nearly
+didn't. Cheap fix: annotate captures of defended targets:
+
+```
+Captures: Rxa7 (free), Qxb5 (defended by a6), Nxe5 (defended by Nc6, Qe6)
+```
+
+Even just `(defended)` vs `(undefended)` would kill the most common one-move
+queen-grab blunder, while leaving real calculation to the agent.

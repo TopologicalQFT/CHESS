@@ -181,7 +181,14 @@ async def make_move(move: str) -> str:
         return f"Server rejected {san}: {client.last_error}"
     if client.phase == "finished":
         return f"You played {san}.\n\n{board_report()}"
-    return f"You played {san}. Now it's the opponent's turn — call wait_for_my_turn."
+    # Compact echo of the resulting position — catches a misimagined board
+    # one move sooner (rules-state only; agents verify details themselves).
+    return (
+        f"You played {san}.\n"
+        f"Position now (opponent to move): {client.fen}\n"
+        f"{material_line(client.board())}\n"
+        f"Call wait_for_my_turn."
+    )
 
 
 @mcp.tool()
