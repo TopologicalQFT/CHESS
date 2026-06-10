@@ -1,6 +1,10 @@
 # Context — general
 
-<!-- The position's nature, updated when it changes character. -->
+<!-- The position's nature, updated when it changes character.
+     When assessing a NEW kind of position, check the knowledge vault first
+     ("Position Evaluation", "Plans by Position Type", the opening's note) —
+     position types are known things; classify before you improvise.
+     Update incrementally: most moves change nothing here. -->
 
 ## Pawn structure
 <!-- Chains, islands, locked or fluid center, passed/backward/isolated pawns. -->

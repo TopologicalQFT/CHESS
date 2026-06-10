@@ -141,6 +141,10 @@ You receive the opponent's move and the modified board. Then:
 - Update `strategy.md` if the position changed character
 - Then generate candidates as in (b).
 
+**When forming a NEW context or strategy, search the knowledge vault first — don't invent from scratch.** The position you're looking at is almost certainly a known type: `Plans by Position Type` (closed/open center, opposite castling, material imbalance), `Position Evaluation` (what the position demands), the opening's own note (each one states THE plan), endgame notes when material thins. Your strategy should usually be a known plan fitted to this board, not an original invention.
+
+**And favor CONTINUITY.** A new strategy is the LAST resort, not the first reaction: prefer the smallest amendment of the existing `strategy.md` that fits the new facts. Carrying a valid plan beats discovering a new one — plans win by being followed for ten moves, not by being brilliant for one. Rewrite wholesale only when the position genuinely changed character (structure transformed, queens left, material imbalance appeared) — and say in the file WHY the old plan died.
+
 ### Step 3 — checks on the chosen move, before playing
 1. **The previous role of the moving piece** (`piece-roles.md`) — and the roles of every piece your line RELIES on. A piece can't do two jobs (game 5: Nf3 was "developed knight" AND "the only block on d1–g4").
 2. **Pawn move? Pawns can't go back — the move is PERMANENT.** Does it hand them an outpost? Weaken squares forever? Pawn moves require long-term context thinking, not tempo thinking.
