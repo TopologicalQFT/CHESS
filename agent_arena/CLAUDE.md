@@ -78,19 +78,37 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 | Before trading the last pieces | `knowledge/endgames/king-and-pawn/King and Pawn Index.md` | Pawn endings are exact — calculate, don't hope |
 | After losing a game | `knowledge/strategy/LLM Blunder Modes.md` | Find which one got you |
 
-## The per-move routine (inline — do NOT skip under play pressure)
+## Time discipline: triage FIRST, then think
 
-Run ALL five steps every move. Past games show the routine gets skipped exactly when it's needed most.
+Most moves deserve ~10 seconds; a few deserve ~1 minute. Knowing which is which is itself a skill — and it costs you 5 seconds, using only what the board report already tells you. **Spend your first 5 seconds deciding how to spend the rest.**
 
-1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If anything looks threatening: `opponent_replies(fen)`.
-2. **Loose pieces, both sides:** is anything of yours hanging? Anything of theirs free? When in doubt: `list_loose_pieces(fen)`. Remember pins make defenders fake: `pinned_pieces(fen)`.
-3. **Candidates:** pick 2–3 moves from the legal list, compare concretely (what's their best answer to each?).
-4. **Simulate before committing:** `preview_move(fen, move)` for your chosen move — MANDATORY for any capture, pawn push, or "trade". Check its output for: your pieces left hanging (blunder mode 8 — self-opened lines), and whether your "trade" actually has a recapturer (mode 9).
-5. **Legality:** the move must appear in the legal moves list you were given.
+### The triage (read it off the report — zero calculation)
 
-General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions every move. Endgame: activate the king, push passed pawns.
+The move is **RED (think ~1 min, full routine)** if ANY of these is true:
+- The report flags their move as a **CAPTURE or CHECK** (it prints this explicitly)
+- You intend a capture, a trade, or a pawn push — anything irreversible
+- The **Material:** line changed since your last turn
+- Your Captures/Checks lists contain something that wasn't there last turn
+- You're choosing a NEW plan (the old one finished or got refuted)
+- ≤12 pieces and the move touches pawns or king (endgame precision)
 
-Deeper guidance lives in the vault ([[Move Selection Checklist]] expands this routine; strategy notes per situation in the table above).
+Otherwise the move is **GREEN (~10 seconds)**: book opening moves from the repertoire, developing moves toward a known setup, forced single recaptures, quiet maneuvering when their move was also quiet. *A quiet reply to a quiet move* — if their move attacked nothing new and abandoned nothing, the position's urgency has not changed and your standing plan continues.
+
+When genuinely unsure which it is, it's RED — but "unsure" should be rare if you check the triggers honestly.
+
+### GREEN path (~10s)
+One glance: is anything of mine hanging in the report's own lists? No? Play the planned move. **Zero toolkit calls, no candidate tree.** (Exception for recaptures: one breath for a zwischenzug — is there a check or bigger capture first?)
+
+### RED path (~1 min, the full routine)
+1. **Their last move:** why? What does it newly attack — and what did it STOP defending? If threatening: `opponent_replies(fen)`.
+2. **Loose pieces, both sides:** `list_loose_pieces(fen)` when in doubt. Pins make defenders fake: `pinned_pieces(fen)`.
+3. **Candidates:** 2–3 moves, compare their best answers concretely.
+4. **Simulate before committing:** `preview_move(fen, move)` — MANDATORY for any capture, pawn push, or "trade". Check for self-opened lines (blunder mode 8) and verify trades have a recapturer (mode 9).
+5. **Legality:** the move must be in the legal moves list.
+
+General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns.
+
+Deeper guidance lives in the vault ([[Move Selection Checklist]] expands the RED routine; strategy notes per situation in the table above).
 
 ## Filing bug reports
 
