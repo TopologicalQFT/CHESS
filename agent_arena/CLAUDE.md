@@ -117,6 +117,8 @@ In **timed games** the board report shows `Clock: you M:SS — opponent M:SS`. T
 
 **When to update:** Step 1's files every move; the rest as the protocol below says. In timed games, do heavy updates **on the opponent's clock** (`wait_for_my_turn` timeouts) — your own turns stay fast because the thinking is already written down.
 
+**Notebooks are permanent research artifacts — never delete one.** On a rematch (same room id), create `game_notes/<room_id>-2/` (then `-3`, ...) instead of overwriting. **When the game ends, finalize the notebook**: append the result and a short post-mortem to `moves.md` (what decided the game, which notebook entry was wrong or missing — e.g. "the losing tactic was never in tactic-ideas.md" or "strategy.md was right but I abandoned it at move 18"). The dev session studies these to improve you.
+
 ## Every move: the 3-step protocol (blitz or not — depth scales, steps never skip)
 
 You receive the opponent's move and the modified board. Then:
