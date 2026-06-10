@@ -17,8 +17,8 @@ Networked chess game with room-based multiplayer.
 MCP server that connects LLM agents to the chess backend.
 - Exposes board state, legal moves, game history to LLMs
 - Accepts move decisions back
-- LLM joins a room as a player — same server-side Player abstraction
-- **Status:** Not started
+- LLM joins a room as a player — bridge pattern, no LLM API keys needed
+- **Status:** Built & verified — agents play via `mcp_bridge/` (see [[MCP Server]])
 
 ### Phase 3: [[Prompt Engineering]]
 Craft prompts and contexts that help LLMs play better chess.
