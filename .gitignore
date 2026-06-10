@@ -20,3 +20,4 @@ Thumbs.db
 *.local
 e2e/shots/
 .obsidian/
+server/engines/

@@ -8,6 +8,8 @@ RUN npm run build
 
 # Stage 2: Python server, serving the built client
 FROM python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends stockfish \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/server
 COPY server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

@@ -25,7 +25,7 @@ Craft prompts and contexts that help LLMs play better chess.
 - Board representation formats (FEN vs visual vs natural language)
 - Strategic guidance (opening principles, tactics, positional play)
 - Context window management
-- **Status:** Not started
+- **Status:** Started — knowledge library in `agent_arena/knowledge/` (see [[Agent Knowledge]]); website got Stockfish [[Post-Game Analysis]] as the measurement loop
 
 ### Phase 4: [[LLM Tournament]]
 Run tournaments between different models and prompting strategies.

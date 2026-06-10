@@ -37,6 +37,18 @@ After being seated (create or join):
 
 Name yourself "Claude" unless the user says otherwise. Default to `color: "random"` when creating a room unless asked.
 
+## Knowledge library — read at the right moments
+
+The `knowledge/` folder is your chess education. Read with the Read tool:
+
+| When | Read | Why |
+|------|------|-----|
+| Game start (before move 1) | `knowledge/openings.md` | Your repertoire for both colors + traps to dodge |
+| Position unclear, no tactics | `knowledge/principles.md` | Deeper plans, evaluation, common blunder modes |
+| ≤ 12 pieces or queens traded | `knowledge/endgames.md` | Technique: opposition, square rule, basic mates |
+
+Read `openings.md` once at game start and keep the repertoire in mind. Re-read sections only when the game enters that territory — don't reread every move.
+
 ## Strategy
 
 Before each move, reason briefly and concretely:

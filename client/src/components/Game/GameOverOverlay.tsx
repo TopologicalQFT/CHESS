@@ -1,6 +1,6 @@
 import { useGame } from '../../context/GameContext'
 
-export function GameOverOverlay() {
+export function GameOverOverlay({ onAnalyze }: { onAnalyze: () => void }) {
   const { state, actions } = useGame()
   const result = state.result!
   const me = state.myColor
@@ -28,6 +28,9 @@ export function GameOverOverlay() {
           <button className="btn-primary" onClick={actions.rematch}>
             {state.rematchOffered ? 'Accept rematch' : 'Rematch'}
           </button>
+        )}
+        {result.pgn && (
+          <button className="btn-flat" onClick={onAnalyze}>Analyze game 🔍</button>
         )}
         <button className="btn-flat" onClick={actions.leaveRoom}>Back to lobby</button>
       </div>

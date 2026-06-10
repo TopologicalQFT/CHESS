@@ -6,10 +6,12 @@ import secrets
 from pathlib import Path
 from typing import Optional, Set
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
+
+import analysis
 
 from models import CreateRoomMsg, JoinRoomMsg, MoveMsg, ReconnectMsg
 from player import HumanPlayer
@@ -31,6 +33,22 @@ lobby_sockets: Set[WebSocket] = set()
 @app.get("/health")
 async def health():
     return {"status": "ok", "rooms": len(manager.rooms)}
+
+
+class AnalyzeRequest(BaseModel):
+    pgn: str
+
+
+@app.post("/analyze")
+def analyze_game(req: AnalyzeRequest):
+    """Stockfish post-game analysis. Sync endpoint → FastAPI's threadpool,
+    so the engine never blocks live games on the event loop."""
+    try:
+        return analysis.analyze_pgn(req.pgn)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 async def push_room_list() -> None:
