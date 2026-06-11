@@ -4,6 +4,7 @@ How to calculate CORRECTLY. Being smart doesn't help if the method is wrong — 
 
 The five disciplines, in the order they apply within one calculation:
 
+0. [[Finding Tactics]] — the signal scan that tells you a tactic might exist (run every move)
 1. [[Candidate Moves First]] — choose WHAT to calculate before calculating anything
 2. [[Forcing Moves First]] — within each line: checks, captures, threats, to quiescence
 3. [[Stepping Stones]] — never trust your memory of a position more than 2 plies deep

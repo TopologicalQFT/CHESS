@@ -1,37 +1,29 @@
-# Working memory — per-move, extended on the opponent's clock
+# Working memory — room ce85de (White, Najdorf a5-clamp + d5 wedge)
 
 ## Piece roles
 
-<!-- One line per piece: its CURRENT jobs — what it defends, what it blocks,
-     what it aims at. UPDATE WHEN PIECES MOVE (Step 1). A piece can't do two
-     jobs: before any move that cashes in one job, this map shows what gets
-     abandoned. OVERLOADED pieces (2–3 defending jobs) marked → also note
-     them in position.md weaknesses (yours = danger, theirs = target).
+Mine (after 15.Qxd3):
+- Qd3: hits a6 (1v1 with Ra8); covers c4, c2, d-file behind d5 wedge
+- Be3: covers c5 (their knight's dream square!) + b6; pairs with a5 clamp
+- Nb3: holds a5 pawn, covers c5; reroute candidate Nd2 (→c4 ONLY when c-file guarded — Qc7 hits c4!)
+- Ra1: behind a5; Rf1: needs a job → Rfd1 or Rfe1
+- d5 pawn: the wedge — cramps them, becomes PASSED if their d6 ever captures to c5
 
-     Mine:
-       Nf3: covers e5, g5; BLOCKS d1–g4 diagonal
-       Re1: holds e-file; back-rank duty until luft
-     Theirs (key pieces only): -->
+Theirs:
+- Qc7: c-file owner; watches c4 SQUARE; c2 raid dead (Qd3 covers, 1v1)
+- Nd7: wants c5 (Be3+Nb3 cover it 2x) or f6→kingside
+- Be7: passive; wants g5 (trade my Be3) or f6 supporting e5
+- Ra8: tied to a6 defense vs my Qd3; Rf8: free (→c8 likely)
 
 ## Tactic ideas
-
-<!-- Ideas WORTH REMEMBERING — including ones NOT currently possible. A
-     tactic is usually enabled by one small change; written here, you
-     RECOGNIZE the moment instead of re-deriving it. Step 2 duty: ADD new,
-     PRUNE outdated, CHECK if their move made one EXECUTABLE. Theirs against
-     you go here too, prefixed THEIRS.
-
-     Format: idea → what's missing
-       "Bxh7+ Greek gift → needs their Nf6 to leave"
-       "THEIRS: ...Ng4+f2 fork → live if my Be3 moves" -->
+- c4 push now SAFE (Qd3 covers c4) — bind: c4+d5+a5
+- Bb6 tempo on Qc7 — only as part of a sequence; count attackers on b6 fresh that move
+- THEIRS: ...Nc5 hitting Qd3/Nb3 → Bxc5! dxc5 → my d5 PASSED. Welcome it.
+- THEIRS: ...Qxc2?? — defended by Qd3, 1v1, queen-for-pawn = never
 
 ## Scenarios ("lines")
-
-<!-- Predicted opponent moves with prepared answers + your intended
-     sequences. This is what makes straightforward responses (Step 2a)
-     instant: a verified hit plays in seconds. Extend ON THEIR CLOCK.
-     Verified = walked on the imagination board. Any surprise voids all.
-
-       if exd5 → Rxe2+ (verified)
-       if e5   → Nd7 (check first)
-       my idea: Nf1–g3–f5, then d4 break once Re8 is forced -->
+- if ...Nc5 → Bxc5 dxc5 → c4, rooks to d1/e1, target e5 on the half-open file
+- if ...f5 → Rae1 or f4 — COUNT e5 attackers/defenders FRESH (last game's lesson: no stale counts)
+- if ...e4 → Qe2, then f3 undermines the overextended pawn
+- if ...Rfc8 → c4; bind complete, then improve pieces slowly
+- if ...Bg5 → allow BxBe3, recapture fxe3: f-file opens for Rf1, e3 covers d4/f4 — fine for me
