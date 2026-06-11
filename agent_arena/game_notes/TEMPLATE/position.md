@@ -26,13 +26,16 @@
      Plans grow from assets. -->
 
 ### Mine — weaknesses
-<!-- Standing liabilities that KEEP mattering: back-rank, overloaded pieces
-     (2–3 defending jobs — see working.md piece roles), weak squares, airless
-     king. Persistent loose pieces from hanging_report belong here too. -->
+<!-- Every entry passes the ATTACKABILITY TEST (name the enemy piece that
+     will attack it — else it's cosmetics, leave it off) and gets a TEMPO TAG
+     (static = they exploit slowly / dynamic = urgent, evaporates). See
+     knowledge/strategy/Weaknesses.md for the catalog + signals. Persistent loose pieces from hanging_report belong here too. -->
 
 ### Theirs — assets
 <!-- An asset of theirs you can trade off or blunt is a candidate plan. -->
 
 ### Theirs — weaknesses
-<!-- These seed candidate moves every single turn. An overloaded defender of
-     theirs = a target: give it a third job or remove it. -->
+<!-- Same rules: attackability test (name MY piece that attacks it) + tempo
+     tag (static → fix it, maneuver; dynamic → forcing moves NOW). These seed
+     candidates every turn. Standing query: do they have TWO weaknesses on
+     opposite wings yet? If not, creating the second is the plan. -->

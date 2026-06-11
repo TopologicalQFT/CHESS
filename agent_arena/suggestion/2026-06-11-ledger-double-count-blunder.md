@@ -32,6 +32,10 @@ Root causes, distinct from the ledger bug:
 2. **Stale safety verdicts.** "e5 = 2v2, never take" was written into working.md at move 16 and reused verbatim at 18 and 19. The recheck trigger was framed as "if a defender LEAVES" — only opponent-side changes. Scenario guard clauses must be symmetric: re-count when EITHER side adds/removes a piece on the relevant line, including my own moves (Qe2 was MY move that changed the count!).
 3. hanging_report skipped moves 14-20 (protocol says every move).
 
+## Third finding (game ce85de, move 18): phantom defender through an occupied square — proposed Mode 16
+
+Rejected Qe6+ believing "after ...Kh8 nothing undefended" — in fact Be7 hung: I credited Qc7 as defender of e7, but their own Nd7 blocks the 7th rank. Mirror image of Mode 15 (there: missed attacker BEHIND my piece; here: invented defender THROUGH their piece). Proposed wording: *"Phantom defender: before calling a piece 'defended', trace the defender's line square by square — a defense that passes through ANY occupied square (either color) doesn't exist. Three-piece interactions (blocks, X-rays, overloads) are where prose-counting fails; the imagination board computes them exactly — use it on the REJECTED candidate too, not just the chosen one."* Cost this time: only an unposed problem (...Rf7! holds objectively). Caught by the user, confirmed by imagine_move's danger report.
+
 ## What worked (keep)
 
 - Move-13 discipline: walked the e5-grab on the imagination board and found the `...Bxf2+ / Qf6+` refutation *before* the opponent hinted at it; correctly avoided it twice.
