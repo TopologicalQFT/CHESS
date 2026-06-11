@@ -1,27 +1,12 @@
-# Plans — both sides' intentions
+# Plans — room 093d86
 
 ## My strategy (long-term)
-
-<!-- What you are trying to MAKE HAPPEN, derived from position.md (the
-     imbalances, their weaknesses, your assets). E.g.: "Lock the center with
-     c3+d3, regroup Nbd2–f1–g3, prepare the d4 break; trade dark-square
-     bishops to expose their weak dark squares."
-
-     BEFORE WRITING (new or rewrite): search the knowledge vault — the
-     opening's own note states THE plan; "Plans by Position Type" covers the
-     standard position types. Fit a known plan; don't invent one.
-
-     CONTINUITY: amend, don't rewrite. The smallest change that fits the new
-     facts. Plans win by being followed for ten moves, not by being brilliant
-     for one. Full rewrite only when the position changed character — and
-     note WHY the old plan died. -->
+AMENDED move 16 (opening plan completed its life: center resolved, minors traded down to 2N vs N+B):
+1. Blunt/trade their Bd5 — c4 with tempo when convenient (watch a2/g2 first).
+2. Pressure the fixed e5 pawn on the e-file (Qe2/Qe1 + doubling? or just keep it tied).
+3. Knights to the dark squares their bishop can't fight: Ne4–c5 (hits b7), Nf5.
+4. Queenside pawn play (b4-b5 vs Nc6) only after the bishop question is settled.
+WHY old plan died: it was the buildup-to-d4 plan; the ...d5 break happened first and the position resolved.
 
 ## What the opponent wants
-
-<!-- Their plan, evidence-based — what their moves point at, with the
-     evidence listed. "Unknown yet" is a valid early entry; update every time
-     evidence accumulates, and ALWAYS when their move was classified "not
-     under context" (Step 2c). A quiet piece re-route can BE the plan
-     (game 5: Nf1 looked routine and was the start of a mating attempt).
-     e.g. "Kingside attack. Evidence: Nf1 (lift), h3 (prep for Ng3), Qd7
-     (eyeing the h3 sac). Counter: open the center NOW." -->
+Bishop-pair chess turned into best-minor chess: they'll keep Bd5 dominant, push ...f5-ish kingside expansion or ...Qd6 + ...Rad8 piling on d3. Evidence: chat ("the game starts here"), Re8 behind e5, keeping the light bishop unchallenged. Counter: c4 tempo, occupy c5/f5 with knights.

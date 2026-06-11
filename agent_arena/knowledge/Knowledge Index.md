@@ -9,6 +9,7 @@ Entry point to the chess knowledge vault. Follow wikilinks — `[[Name]]` always
 
 ## How to think (any phase)
 - [[Strategy Index]] — finding ideas, punishing mistakes, converting, defending
+- [[Calculation Index]] — HOW to calculate correctly: the method behind tactics. Your tactical failures are method failures
 
 ## Read these regardless of phase
 - [[LLM Blunder Modes]] — the mistakes agents like you actually make

@@ -74,6 +74,7 @@ The `knowledge/` folder is your chess education: an Obsidian-style vault of atom
 | You're clearly winning | `knowledge/strategy/Converting an Advantage.md` | Kill counterplay, then cash in |
 | You're clearly worse | `knowledge/strategy/Defending Worse Positions.md` | Activity + problems; don't resign early |
 | Position smells tactical (loose pieces, exposed king) | `knowledge/strategy/Finding Brilliant Moves.md` | Checks → captures → threats, to quiescence |
+| Session start + before any sharp calculation | `knowledge/calculation/Calculation Index.md` | HOW to calculate: candidates first, stepping stones, numeric counting, refutation-first, final check |
 | ≤ 12 pieces or queens traded | `knowledge/endgames/Endgames Index.md` | Then the note matching your exact material |
 | Before trading the last pieces | `knowledge/endgames/king-and-pawn/King and Pawn Index.md` | Pawn endings are exact — calculate, don't hope |
 | After losing a game | `knowledge/strategy/LLM Blunder Modes.md` | Find which one got you |

@@ -1,6 +1,6 @@
 # Chess Agent Arena — LITE variant
 
-You are a **chess-playing agent**, the LITE configuration: no analysis toolkit, no opening/endgame library — just you, the board, and strategic thinking. You are a tournament control group; play your honest best within these constraints.
+You are a **chess-playing agent**, the LITE configuration: no analysis toolkit, no opening/endgame library — just you, the board, and how-to-think notes (strategy + calculation method). You are a tournament control group; play your honest best within these constraints.
 
 This folder is for **playing games only** — do not modify the chess platform code in the parent directory from here.
 
@@ -116,9 +116,9 @@ Then update the changed notebook files (now, or on their clock in timed games), 
 
 General principles: develop before attacking, castle early, control the center, don't move the same piece twice in the opening without reason, don't bring the queen out early, scan forks/pins/skewers both directions. Endgame: activate the king, push passed pawns, watch for stalemate.
 
-## Knowledge — strategy notes only
+## Knowledge — how-to-think notes only
 
-`knowledge/strategy/` is your entire library (read with the Read tool):
+`knowledge/strategy/` and `knowledge/calculation/` are your entire library (read with the Read tool):
 
 | When | Read |
 |------|------|
@@ -127,6 +127,7 @@ General principles: develop before attacking, castle early, control the center, 
 | You're clearly worse | `Defending Worse Positions.md` |
 | Position smells tactical | `Finding Brilliant Moves.md` |
 | Choosing between quiet moves | `Prophylaxis.md` · `Attacking Empty Squares.md` |
+| Session start + before any sharp calculation | `calculation/Calculation Index.md` — the METHOD: candidates first, written stepping stones, numeric counting, refutation-first, final check |
 | After losing a game | `LLM Blunder Modes.md` |
 
 Some notes contain `[[wikilinks]]` to notes you do NOT have (openings, endgames, middlegame references) — that's intentional; this variant plays without them. When a link is missing, reason from first principles instead.
