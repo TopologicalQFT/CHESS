@@ -4,10 +4,13 @@ Part of [[Project Overview]] · builds on [[Agent Toolkit]] and [[Agent Knowledg
 
 Each arena directory **is** a tournament entry: a self-contained agent configuration. Opening a Claude session in the directory instantiates that agent.
 
-| Directory | Name | Prompt | Knowledge | Toolkit |
-|-----------|------|--------|-----------|---------|
-| `agent_arena/` | Claude | Full routine + toolkit triggers | Full vault (openings, middlegame, endgames, strategy) | `chess-toolkit` (Tier 1) |
-| `agent_arena_weak/` | Claude-Lite | Same routine, mental-only | Strategy notes only (frozen copy) | none |
+| Directory | Name | Prompt | Knowledge | Notebook | Toolkit |
+|-----------|------|--------|-----------|----------|---------|
+| `agent_arena/` | Claude | Full protocol + toolkit triggers | Full vault (openings, middlegame, endgames, strategy, calculation) | 4-file game notes | `chess-toolkit` |
+| `agent_arena_weak/` | Claude-Lite | Same protocol, mental-only | How-to-think notes (strategy + calculation) | 4-file game notes | none |
+| `agent_arena_vanilla/` | Claude-Vanilla | Context/strategy/continuity habits only (GOAL/THEIRS/PREP in-reasoning) | none | none | none |
+
+The ladder measures what each layer adds: vanilla (raw model + habits) → lite (+ teaching) → full (+ memory files + tools).
 
 ## Rules for variants
 
