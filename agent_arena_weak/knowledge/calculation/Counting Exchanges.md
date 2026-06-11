@@ -9,6 +9,9 @@
 4. **Either side may STOP recapturing** the moment continuing loses material — check at each step: "would I/they recapture here, or stand pat?" The sequence ends at the best stopping point, not at the last possible capture.
 5. The final number is the verdict. "+1" is the answer; "wins a pawn I think" is not an answer.
 
+## Overlapping trades — the ledger poison
+If a NEW capture sequence starts while a previous exchange is still open (recapture pending), incremental tallies double-count the pending recapture (blunder mode 14 — it cost a knight). **Rule: settle the verdict on the FINAL position's TOTAL material**, never by adding deltas across trades. And X-RAY pieces (R/Q behind your own attacker on the line) are full attackers — count batteries back-to-front (mode 15).
+
 ## Two mandatory cross-checks
 - **The recapturer must exist and be legal**: name the exact piece making each capture, verify its geometry (a "defender" that's king-pinned doesn't count — check the king's lines yourself).
 - **After the dust settles, run the hanging scan on the FINAL position** (from your final written stepping stone): winning the exchange while leaving your back rank open is not winning.

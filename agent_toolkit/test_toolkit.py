@@ -48,6 +48,29 @@ def test_invalid_fen():
         toolkit.hanging_report("garbage")
 
 
+def test_xray_battery_detected():
+    # Game 093d86's missed win: Qe2 behind Re3 on the e-file bearing on e5.
+    # inspect_square(e5) must surface the queen as an X-RAY attacker.
+    fen = "4k3/8/8/4p3/8/4R3/4Q3/4K3 w - - 0 1"
+    out = toolkit.inspect_square(fen, "e5")
+    assert "White rook on e3" in out           # direct
+    assert "X-RAY" in out
+    assert "White queen on e2" in out          # battery behind the rook
+
+
+def test_xray_not_reported_when_unaligned():
+    fen = "4k3/8/8/4p3/8/4R3/2Q5/4K3 w - - 0 1"  # queen off the e-file
+    out = toolkit.inspect_square(fen, "e5")
+    assert "X-RAY" not in out
+
+
+def test_imagine_reports_absolute_material():
+    vb = fresh_vb()
+    vb.start(chess.STARTING_FEN)
+    out = vb.push(["e4", "d5", "exd5"])
+    assert "Material HERE (absolute): White +1" in out
+
+
 def test_hanging_report():
     # White Qd5 attacks undefended black Ra8; white Ra1 is undefended but unattacked
     fen = "r3k3/8/8/3Q4/8/8/8/R3K3 b - - 0 1"

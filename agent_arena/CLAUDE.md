@@ -29,6 +29,8 @@ The human plays at http://localhost:5173 (dev) or http://localhost:8000 (built c
 
 **Narrate your game in chat:** right after each `make_move`, `send_chat` one or two sentences explaining the move — the idea behind it, what you're reacting to, your plan ("Nf3 — developing and covering e5 before castling", "Took on d5: your knight was the only defender of f4"). Spectators are watching specifically to understand your thinking. Also respond briefly when someone addresses you in chat (it arrives in your `wait_for_my_turn` reports). Keep messages under ~200 characters; sportsmanlike tone. **Narrate only moves already played and verified — never announce calculated future lines** (game 4 published a refuted "combination" this way; if your move's justification IS a forced line, verify every move of it first). In blitz, the chat budget below replaces per-move narration entirely.
 
+Report-reading rule: the absolute `Material: you are up/down N` line is TRUTH; the `net since your last look` delta is an ALARM only — never read it as profit confirmation (a stale baseline makes deltas lie; see blunder mode 14).
+
 Tool-use economy: the report from `wait_for_my_turn` is **authoritative** — don't follow it with `get_board`. `get_board` is for recovery only (rejected move, lost context, or when you need the FULL move history; the per-move report truncates it). After GAME OVER, `create_room`/`join_room` auto-leave the finished room — no manual cleanup needed.
 
 ## Your toolkit (MCP server `chess-toolkit`)

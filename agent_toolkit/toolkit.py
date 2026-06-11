@@ -77,6 +77,39 @@ def _loose_pieces(board: chess.Board, color: chess.Color) -> List[str]:
 
 # ── Tool implementations (plain functions, MCP wraps them) ──────────
 
+def _xray_pieces(board: chess.Board, color: chess.Color, square: int) -> List[str]:
+    """Sliders of `color` that bear on `square` THROUGH a friendly direct
+    attacker on the same line (a battery: Q behind R, R behind R, Q behind B).
+    They join the capture sequence back-to-front — full attackers for
+    exchange counting, invisible to plain attackers() (game 093d86: an
+    uncounted Qe2 behind Re3 hid a winning capture for two moves)."""
+    findings = []
+    direct = set(board.attackers(color, square))
+    for sq in chess.SquareSet(board.occupied_co[color]):
+        piece = board.piece_at(sq)
+        if piece.piece_type not in (chess.BISHOP, chess.ROOK, chess.QUEEN) or sq in direct:
+            continue
+        # movement-type compatibility with the line to the target square
+        same_line = (chess.square_file(sq) == chess.square_file(square)
+                     or chess.square_rank(sq) == chess.square_rank(square))
+        same_diag = abs(chess.square_file(sq) - chess.square_file(square)) == \
+            abs(chess.square_rank(sq) - chess.square_rank(square))
+        if piece.piece_type == chess.ROOK and not same_line:
+            continue
+        if piece.piece_type == chess.BISHOP and not same_diag:
+            continue
+        if piece.piece_type == chess.QUEEN and not (same_line or same_diag):
+            continue
+        blockers = [b for b in chess.SquareSet(chess.between(sq, square))
+                    if board.piece_at(b) is not None]
+        if len(blockers) == 1 and blockers[0] in direct:
+            findings.append(
+                f"{_piece_desc(board, sq)} — X-RAY through {_piece_desc(board, blockers[0])} "
+                f"(battery: a full attacker for exchange counting, capture order front-to-back)"
+            )
+    return findings
+
+
 def inspect_square(fen: str, square_name: str) -> str:
     board = _board(fen)
     try:
@@ -85,13 +118,13 @@ def inspect_square(fen: str, square_name: str) -> str:
         return f"'{square_name}' is not a square."
     piece = board.piece_at(square)
     occupant = _piece_desc(board, square) if piece else f"{square_name} is empty"
-    white_attackers = _attackers_desc(board, chess.WHITE, square)
-    black_attackers = _attackers_desc(board, chess.BLACK, square)
-    return "\n".join([
-        f"Square {square_name}: {occupant}",
-        f"White pieces attacking/defending it: {', '.join(white_attackers) if white_attackers else '(none)'}",
-        f"Black pieces attacking/defending it: {', '.join(black_attackers) if black_attackers else '(none)'}",
-    ])
+    lines = [f"Square {square_name}: {occupant}"]
+    for color, label in ((chess.WHITE, "White"), (chess.BLACK, "Black")):
+        direct = _attackers_desc(board, color, square)
+        lines.append(f"{label} pieces attacking/defending it: {', '.join(direct) if direct else '(none)'}")
+        for xray in _xray_pieces(board, color, square):
+            lines.append(f"  + {xray}")
+    return "\n".join(lines)
 
 
 def hanging_report(fen: str) -> str:
@@ -209,6 +242,17 @@ class VirtualBoard:
             lines.append(f"  {8 - i} {row}")
         lines.append("    a b c d e f g h")
         lines.append(f"FEN: {board.fen()}")
+        # ABSOLUTE material count — incremental ledgers across overlapping
+        # trades double-count recaptures (cost a knight in game 093d86);
+        # the final position's total is the only trustworthy number.
+        diff = 0
+        for piece_type, value in PIECE_VALUES.items():
+            if piece_type == chess.KING:
+                continue
+            diff += value * (len(board.pieces(piece_type, chess.WHITE))
+                             - len(board.pieces(piece_type, chess.BLACK)))
+        verdict = "even" if diff == 0 else (f"White +{diff}" if diff > 0 else f"Black +{-diff}")
+        lines.append(f"Material HERE (absolute): {verdict}")
         turn = "White" if board.turn == chess.WHITE else "Black"
         check = " — IN CHECK" if board.is_check() else ""
         if board.is_checkmate():

@@ -1,5 +1,7 @@
 # 2026-06-11 — Game 093d86: ledger double-count blunder (proposed Blunder Mode 14)
 
+> ✅ **All adopted 2026-06-11 (dev session):** (1) Blunder mode 14 added to both vaults with your exact wording and game citation — plus mode 15 for the X-ray finding. (2) The imagination board now prints `Material HERE (absolute):` on every report — the single output field you asked for. (3) `inspect_square` now detects X-RAY batteries (your Qe2-behind-Re3 case is the regression test). (4) Report-reading rule in both CLAUDE.mds: the absolute Material line is truth, the net delta is an alarm only. (5) Symmetric expiry for safety verdicts (including your-own-move triggers) added to the working.md template and mode 15. (6) The whole failure class also got a method note: knowledge/calculation/Counting Exchanges.md — numbers never prose, final-position totals never incremental ledgers. On hanging_report being skipped moves 14–20: noted; the new calculation curriculum makes Step 1 compliance more load-bearing — next post-mortem will tell.
+
 Room `093d86`, White (me) vs Claude (Black). Result: 0-1 (resigned move 25, down N for P with queens off). Full notebook: `game_notes/093d86/`.
 
 ## What happened

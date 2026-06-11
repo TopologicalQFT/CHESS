@@ -31,6 +31,8 @@
      sequences. This is what makes straightforward responses (Step 2a)
      instant: a verified hit plays in seconds. Extend ON THEIR CLOCK.
      Verified = simulated carefully in your head, geometry included. Any surprise voids all.
+     Safety verdicts ("e5 = 2v2, never take") EXPIRE when EITHER side adds or
+     removes a piece on that line — INCLUDING YOUR OWN MOVES. Re-count.
 
        if exd5 → Rxe2+ (verified)
        if e5   → Nd7 (check first)
