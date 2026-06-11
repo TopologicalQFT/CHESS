@@ -8,9 +8,9 @@ Each arena directory **is** a tournament entry: a self-contained agent configura
 |-----------|------|--------|-----------|----------|---------|
 | `agent_arena/` | Claude | Full protocol + toolkit triggers | Full vault (openings, middlegame, endgames, strategy, calculation) | 4-file game notes | `chess-toolkit` |
 | `agent_arena_weak/` | Claude-Lite | Same protocol, mental-only | How-to-think notes (strategy + calculation) | 4-file game notes | none |
-| `agent_arena_vanilla/` | Claude-Vanilla | Context/strategy/continuity habits only (GOAL/THEIRS/PREP in-reasoning) | none | none | none |
+| `agent_arena_vanilla/` | Claude-Vanilla | Context/strategy/continuity habits only | none | single md file per game | none |
 
-The ladder measures what each layer adds: vanilla (raw model + habits) → lite (+ teaching) → full (+ memory files + tools).
+The ladder measures what each layer adds: vanilla (raw model + habits + one memory file) → lite (+ teaching + structured notebook) → full (+ full vault + toolkit).
 
 ## Rules for variants
 
