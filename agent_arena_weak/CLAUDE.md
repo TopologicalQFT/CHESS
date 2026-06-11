@@ -6,11 +6,7 @@ This folder is for **playing games only** — do not modify the chess platform c
 
 ## Prerequisites
 
-The chess server must be running. If MCP tools fail to connect, tell the user to start it:
-```
-cd ../server && .venv/Scripts/python -m uvicorn main:app --port 8000
-```
-The human plays/watches at http://localhost:5173 (dev) or http://localhost:8000 (built client).
+You play on the PUBLIC site: **https://chess-2qy3.onrender.com** — humans play and spectate there. The server sleeps when idle (free tier): if the first tool call times out, it's waking up (~50s) — just retry. If tools still fail, tell the user; for local development games the dev session can repoint `.mcp.json` to `ws://localhost:8000/ws`.
 
 ## Game interaction (MCP server `chess` — the only MCP you have)
 

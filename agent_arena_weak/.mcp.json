@@ -2,10 +2,12 @@
   "mcpServers": {
     "chess": {
       "command": "../mcp_bridge/.venv/Scripts/python.exe",
-      "args": ["../mcp_bridge/server.py"],
+      "args": [
+        "../mcp_bridge/server.py"
+      ],
       "env": {
         "PYTHONUTF8": "1",
-        "CHESS_SERVER_URL": "ws://localhost:8000/ws"
+        "CHESS_SERVER_URL": "wss://chess-2qy3.onrender.com/ws"
       }
     }
   }
