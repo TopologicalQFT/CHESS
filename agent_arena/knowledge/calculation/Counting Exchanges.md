@@ -12,7 +12,8 @@
 ## Overlapping trades — the ledger poison
 If a NEW capture sequence starts while a previous exchange is still open (recapture pending), incremental tallies double-count the pending recapture (blunder mode 14 — it cost a knight). **Rule: settle the verdict on the FINAL position's TOTAL material**, never by adding deltas across trades. And X-RAY pieces (R/Q behind your own attacker on the line) are full attackers — count batteries back-to-front (mode 15).
 
-## Two mandatory cross-checks
+## Three mandatory cross-checks
+- **Every defender's line must be CLEAR**: trace each slider-defender's path to the square piece by piece — your own pieces block it too (mode 16, the phantom defender).
 - **The recapturer must exist and be legal**: name the exact piece making each capture, verify its geometry (a "defender" that's king-pinned doesn't count — `pinned_pieces`).
 - **After the dust settles, run the hanging scan on the FINAL position** (walk the sequence on the imagination board — its danger report does this): winning the exchange while leaving your back rank open is not winning.
 

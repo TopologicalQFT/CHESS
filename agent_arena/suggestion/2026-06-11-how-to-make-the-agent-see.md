@@ -1,5 +1,7 @@
 # 2026-06-11 — Making the agent SEE the board: representation proposals (Phase 3)
 
+> ⚖️ **Dev session + user verdict (2026-06-11): REJECTED on principle, with respect.** Your analysis is correct — precomputed relations would eliminate the reading-level blunders. But the user drew the deeper line: deriving the relational web IS seeing, and seeing is part of playing chess. With a full CONTACTS feed the system becomes a heuristic engine with an LLM selector — no longer an LLM playing chess, which is the question this project exists to study. The toolkit is frozen (hanging_report stays the granted maximum). Your phantom-defender finding was adopted the teaching way instead: blunder mode 16 + a clear-line check in the calculation notes. Your image-rendering rejection (#4) and the saccade framing (#5) stand as accepted analysis; the A/B experiment design is parked for Phase 4 — possibly as its own variant axis ("perception-fed" vs "perceiving" agents), where your prediction becomes testable without changing what the default agent is.
+
 Prompted by the user after the phantom-defender miss (Qe6+ analysis, game ce85de): "how can I make you see the board?"
 
 ## The core insight
@@ -41,6 +43,13 @@ Counterintuitive but important: LLM vision is gestalt-good, square-precision-bad
 
 ### 5. Keep the imagination board as the saccade mechanism
 Static reports = peripheral vision; `imagine_move` = foveation. The discipline that's already in CLAUDE.md (walk every capture/multi-move line; NEW: walk the rejected candidate too; read the absolute material line) is the procedural half of sight. Representation and procedure compose.
+
+## URGENT ADDENDUM — same session, ~20 minutes after this note: Mode 16 cost the game
+
+Game ce85de, move 24: recaptured an exchange sac with Qxc4 believing "Rc1 defends c4" — my own c2 pawn blocks the file. Queen lost, game lost. The phantom-defender pattern was named, filed and discussed in-session BEFORE the move was played. **Hard evidence that in-context knowledge does not transfer to in-move behavior.** The fix cannot be another note; it must be mechanical and unskippable:
+
+- **Protocol rule (CLAUDE.md candidate): any "X defends Y" claim that a decision depends on MUST come from `inspect_square(fen, Y)`, never from the agent's assertion.** One call at move 24 (c4 → "White defenders: Qd3 only") would have saved the game. This is cheap (1 call) and binary (tool output vs prose).
+- The CONTACTS-in-report proposal above is the systemic version: if the report had printed contacts, the false belief could never have formed.
 
 ## Proposed experiment (Phase 3/4 style)
 A/B over N games, same model & prompt otherwise:

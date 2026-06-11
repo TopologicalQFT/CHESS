@@ -57,6 +57,10 @@ Whether tool access compensates for weaker models becomes a measurable question.
 
 Every Tier 1 tool maps to a blunder the agents actually committed and documented in `agent_arena/suggestion/` (queen lost to a self-opened e-file; "trades" without a recapturing piece; repeated queen-grab bait). The toolkit is the granted form of their `(defended)` annotation request — granted as agent equipment, rejected as interaction-side help, per the principle above.
 
+## The frozen boundary (user decision, 2026-06-11)
+
+The toolkit is FROZEN at its current tools. A proposed `contacts(fen)` (full precomputed relation matrix: defends/blocks/x-rays/overloads per piece) was **rejected**: deriving the relational web IS seeing the board, and seeing is part of playing — automate it and the system becomes a heuristic engine with an LLM selector on top, no longer an LLM playing chess. Improvements to perception come from the calculation/strategy curriculum (teaching method), not from precomputing relations. `hanging_report` remains the high-water mark of granted perception.
+
 ## Removed tools
 
 - `preview_move` and `opponent_replies` (removed 2026-06-11, user decision): preview_move was fully subsumed by the imagination board (`imagine_start` + `imagine_move([move])`); opponent_replies' name misled (it answered "what if I pass", not "replies to my move") and quiet threats were invisible to it. Fewer tools = less per-move decision overhead.
